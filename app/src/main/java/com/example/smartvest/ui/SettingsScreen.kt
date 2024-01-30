@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.smartvest.AppScreen
 import com.example.smartvest.ui.theme.SmartVestTheme
 
 @Composable
@@ -38,5 +39,5 @@ fun SettingsMenu() {
 @Preview(showBackground = true)
 @Composable
 fun SettingsPreview() {
-    SettingsScreen(navController = rememberNavController(), title = "Settings")
+    SettingsScreen(navController = rememberNavController(), title = AppScreen.Settings.route)
 }

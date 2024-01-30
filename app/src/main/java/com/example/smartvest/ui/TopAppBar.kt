@@ -2,7 +2,7 @@ package com.example.smartvest.ui
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -13,7 +13,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.example.smartvest.AppScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,14 +32,15 @@ fun TopAppBar(
         ),
         title = {
             Text(
-                navController.currentBackStackEntry?.destination?.route?: title?: "",
+                text = (navController.currentBackStackEntry?.destination?.route?: title?: "")
+                    .replaceFirstChar(Char::titlecase),  // capitalize first letter
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         },
         navigationIcon = {
             if (canReturn) {
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back"
@@ -45,13 +49,27 @@ fun TopAppBar(
             }
         },
         actions = {
-            IconButton(onClick = { /* do something */ }) {
-                Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = "Menu"
-                )
+            if ((navController.currentBackStackEntry?.destination?.route?: title?: "")
+                    == AppScreen.Home.route
+            ) {  // current screen is Home, so display Settings icon
+                IconButton(
+                    onClick = {
+                        navController.navigate(route = AppScreen.Settings.route)
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = AppScreen.Settings.route
+                            .replaceFirstChar(Char::titlecase)
+                    )
+                }
             }
         },
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()),
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TopBarPreview() {
+    HomeScreen(navController = rememberNavController(), title = AppScreen.Home.route)
 }

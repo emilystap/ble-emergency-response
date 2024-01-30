@@ -7,16 +7,16 @@ import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.ui.HomeScreen
 import com.example.smartvest.ui.SettingsScreen
 
-enum class AppScreen {
-    Home,
-    Settings
+sealed class AppScreen(val route: String) {
+    data object Home : AppScreen("home")
+    data object Settings : AppScreen("settings")
 }
 
 @Composable
 fun AppNav() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = AppScreen.Home.name) {
-        composable(AppScreen.Home.name) { HomeScreen(navController) }
-        composable(AppScreen.Settings.name) { SettingsScreen(navController) }
+    NavHost(navController = navController, startDestination = AppScreen.Home.route) {
+        composable(AppScreen.Home.route) { HomeScreen(navController) }
+        composable(AppScreen.Settings.route) { SettingsScreen(navController) }
     }
 }
