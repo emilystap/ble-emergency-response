@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Smart Vest</string>
+    <string name="sms_alert_dialog_title">Send Location</string>
+    <string name="sms_alert_dialog_text">You are about to send your location to your emergency contacts. Are you sure you want to continue?</string>
 </resources>

@@ -32,7 +32,7 @@ fun TopAppBar(
         ),
         title = {
             Text(
-                text = (navController.currentBackStackEntry?.destination?.route?: title?: "")
+                text = (navController.currentBackStackEntry?.destination?.route ?: title ?: "")
                     .replaceFirstChar(Char::titlecase),  // capitalize first letter
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -49,7 +49,7 @@ fun TopAppBar(
             }
         },
         actions = {
-            if ((navController.currentBackStackEntry?.destination?.route?: title?: "")
+            if ((navController.currentBackStackEntry?.destination?.route ?: title ?: "")
                     == AppScreen.Home.route
             ) {  // current screen is Home, so display Settings icon
                 IconButton(
