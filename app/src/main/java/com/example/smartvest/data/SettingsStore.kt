@@ -18,8 +18,8 @@ class SettingsStore(
     private val context: Context
 ) {
     private companion object {
-        const val TAG = "SettingsStore"
-        private val Context.dataStore: DataStore<Preferences> by
+        const val TAG = "SettingsStore"  // used for logging
+        val Context.dataStore: DataStore<Preferences> by
             preferencesDataStore(name = "settings")
 
         val SMS_ENABLE = booleanPreferencesKey("sms_enable")
@@ -56,7 +56,7 @@ class SettingsStore(
             }
         }
         .map { preferences ->
-            preferences[SMS_ENABLE] ?: false
+            preferences[SMS_ENABLE] ?: false  // assume setting is disabled
         }
 
     val locationEnable: Flow<Boolean> = context.dataStore.data
@@ -70,7 +70,7 @@ class SettingsStore(
             }
         }
         .map { preferences ->
-            preferences[LOCATION_ENABLE] ?: false
+            preferences[LOCATION_ENABLE] ?: false  // assume setting is disabled
         }
 
     val smsNumber: Flow<String> = context.dataStore.data
