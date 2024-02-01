@@ -12,11 +12,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -26,7 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.AppScreen
+import com.example.smartvest.data.SettingsStore
 import com.example.smartvest.ui.theme.SmartVestTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(navController: NavHostController, title: String? = null) {
@@ -44,15 +50,18 @@ fun SettingsScreen(navController: NavHostController, title: String? = null) {
 
 @Composable
 fun SettingsMenu() {
+    val dataStore = SettingsStore(LocalContext.current)
+    val scope = rememberCoroutineScope()
+
     Column(modifier = Modifier.padding(24.dp)) {
-        LocationEnable()
-        SMSEnable()
+        LocationEnable(dataStore, scope)
+        SmsEnable(dataStore, scope)
     }
 }
 
 @Composable
-fun LocationEnable() {
-    var enabled by remember { mutableStateOf(true) }
+fun LocationEnable(dataStore: SettingsStore, scope: CoroutineScope) {
+    var enabled = dataStore.locationEnable.collectAsState(initial = false).value
 
     Row {
         Text(
@@ -63,14 +72,17 @@ fun LocationEnable() {
             checked = enabled,
             onCheckedChange = {
                 enabled = it
+                scope.launch {
+                    dataStore.setLocationEnable(enabled)
+                }
             }
         )
     }
 }
 
 @Composable
-fun SMSEnable() {
-    var enabled by remember { mutableStateOf(true) }
+fun SmsEnable(dataStore: SettingsStore, scope: CoroutineScope) {
+    var enabled = dataStore.smsEnable.collectAsState(initial = false).value
 
     Row {
         Text(
@@ -81,22 +93,28 @@ fun SMSEnable() {
             checked = enabled,
             onCheckedChange = {
                 enabled = it
+                scope.launch {
+                    dataStore.setSmsEnable(enabled)
+                }
             }
         )
     }
     if (enabled) {
         Row {
-            SMSEdit()
+            EditSmsNumber(dataStore, scope)
         }
     }
 }
 
 @Composable
-fun SMSEdit() {
-    var text by remember { mutableStateOf("") }
-    var valid by remember { mutableStateOf(true) }
+fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+
+    var valid by remember { mutableStateOf(true) }
+    var text by remember { mutableStateOf("") }
+
+    val storedSmsNumber = dataStore.smsNumber.collectAsState(initial = "").value
 
     OutlinedTextField(
         value = text,
@@ -108,6 +126,16 @@ fun SMSEdit() {
                 Text(
                     text = "Invalid Number",
                     color = MaterialTheme.colorScheme.error
+                )
+            }
+            else if (storedSmsNumber.isNotEmpty()) {
+                Text(
+                    text = (
+                        "Stored Number: " + "(" + storedSmsNumber.substring(0, 3) + ") " +
+                        storedSmsNumber.substring(3, 6) + "-" +
+                        storedSmsNumber.substring(6, 10)
+                    ),
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         },
@@ -123,12 +151,14 @@ fun SMSEdit() {
         ),
         keyboardActions = KeyboardActions(
             onDone = {
+                //** TODO: validate number
                 if (text.length == 10) {
-                    text = "(" + text.substring(0, 3) + ") " +
-                            text.substring(3, 6) + "-" + text.substring(6, 10)
-
                     keyboardController?.hide()
                     focusManager.clearFocus()
+
+                    scope.launch {
+                        dataStore.setSmsNumber(text)
+                    }
                 }
                 else {
                     valid = false
