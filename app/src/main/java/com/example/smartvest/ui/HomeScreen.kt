@@ -24,7 +24,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,12 +32,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.AppScreen
 import com.example.smartvest.R
 import com.example.smartvest.ui.theme.SmartVestTheme
-import com.example.smartvest.util.PermissionHandler
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    permissionHandler: PermissionHandler,
     title: String? = null
 ) {
     SmartVestTheme {
@@ -46,7 +43,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             topBar = { TopAppBar(navController, title, canReturn = false) },
             floatingActionButton = {
-                if (permissionHandler.hasSmsPermission()) SendFab()
+                SendFab()
             }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
@@ -141,7 +138,6 @@ fun SMSAlertDialog(
 fun HomePreview() {
     HomeScreen(
         navController = rememberNavController(),
-        permissionHandler = PermissionHandler(LocalContext.current),
         title = AppScreen.Home.route
     )
 }

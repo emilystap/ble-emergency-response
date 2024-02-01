@@ -31,14 +31,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.AppScreen
 import com.example.smartvest.data.SettingsStore
 import com.example.smartvest.ui.theme.SmartVestTheme
-import com.example.smartvest.util.PermissionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
-    permissionHandler: PermissionHandler,
     title: String? = null
 ) {
     SmartVestTheme {
@@ -47,22 +45,20 @@ fun SettingsScreen(
             topBar = { TopAppBar(navController, title) }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
-                SettingsMenu(permissionHandler)
+                SettingsMenu()
             }
         }
     }
 }
 
 @Composable
-fun SettingsMenu(permissionHandler: PermissionHandler) {
+fun SettingsMenu() {
     val dataStore = SettingsStore(LocalContext.current)
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(24.dp)) {
         LocationEnable(dataStore, scope)
-        if (permissionHandler.telephonyAvailable && permissionHandler.bleAvailable) {
-            SmsEnable(dataStore, scope)
-        }
+        SmsEnable(dataStore, scope)
     }
 }
 
@@ -180,7 +176,6 @@ fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
 fun SettingsPreview() {
     SettingsScreen(
         navController = rememberNavController(),
-        permissionHandler = PermissionHandler(LocalContext.current),
         title = AppScreen.Settings.route
     )
 }
