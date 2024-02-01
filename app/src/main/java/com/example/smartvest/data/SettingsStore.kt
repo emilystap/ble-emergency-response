@@ -19,7 +19,8 @@ class SettingsStore(
 ) {
     private companion object {
         const val TAG = "SettingsStore"
-        private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+        private val Context.dataStore: DataStore<Preferences> by
+            preferencesDataStore(name = "settings")
 
         val SMS_ENABLE = booleanPreferencesKey("sms_enable")
         val LOCATION_ENABLE = booleanPreferencesKey("location_enable")
