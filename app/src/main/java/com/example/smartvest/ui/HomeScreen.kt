@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,14 +33,21 @@ import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.AppScreen
 import com.example.smartvest.R
 import com.example.smartvest.ui.theme.SmartVestTheme
+import com.example.smartvest.util.PermissionHandler
 
 @Composable
-fun HomeScreen(navController: NavHostController, title: String? = null) {
+fun HomeScreen(
+    navController: NavHostController,
+    permissionHandler: PermissionHandler,
+    title: String? = null
+) {
     SmartVestTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = { TopAppBar(navController, title, canReturn = false) },
-            floatingActionButton = { SendFAB() }  /* TODO: Hide when SMS disabled */
+            floatingActionButton = {
+                if (permissionHandler.hasSmsPermission()) SendFab()
+            }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
                 ConnectionStatus()
@@ -76,7 +84,7 @@ fun ConnectionStatus(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SendFAB() {
+fun SendFab() {
     var openSMSAlertDialog by remember { mutableStateOf(false) }
 
     FloatingActionButton(
@@ -108,7 +116,7 @@ fun SMSAlertDialog(
 ) {
     AlertDialog(
         icon = { Icon(Icons.Default.Warning, contentDescription = "Warning") },
-        title = { Text(text = stringResource(id = R.string.sms_alert_dialog_title)) },
+        title = { Text(text = stringResource(id = R.string.sms_alert_dialog_title)) },  //** TODO: add check for location disabled
         text = { Text(text = stringResource(id = R.string.sms_alert_dialog_text)) },
         onDismissRequest = { onDismiss() },
         confirmButton = {
@@ -131,5 +139,9 @@ fun SMSAlertDialog(
 @Preview(showBackground = true)
 @Composable
 fun HomePreview() {
-    HomeScreen(navController = rememberNavController(), title = AppScreen.Home.route)
+    HomeScreen(
+        navController = rememberNavController(),
+        permissionHandler = PermissionHandler(LocalContext.current),
+        title = AppScreen.Home.route
+    )
 }

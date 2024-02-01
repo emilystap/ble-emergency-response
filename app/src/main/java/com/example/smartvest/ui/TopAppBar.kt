@@ -13,9 +13,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.AppScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,10 +64,4 @@ fun TopAppBar(
         },
         scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()),
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TopBarPreview() {
-    HomeScreen(navController = rememberNavController(), title = AppScreen.Home.route)
 }

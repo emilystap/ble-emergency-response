@@ -31,31 +31,38 @@ import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.AppScreen
 import com.example.smartvest.data.SettingsStore
 import com.example.smartvest.ui.theme.SmartVestTheme
+import com.example.smartvest.util.PermissionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun SettingsScreen(navController: NavHostController, title: String? = null) {
+fun SettingsScreen(
+    navController: NavHostController,
+    permissionHandler: PermissionHandler,
+    title: String? = null
+) {
     SmartVestTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = { TopAppBar(navController, title) }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
-                SettingsMenu()
+                SettingsMenu(permissionHandler)
             }
         }
     }
 }
 
 @Composable
-fun SettingsMenu() {
+fun SettingsMenu(permissionHandler: PermissionHandler) {
     val dataStore = SettingsStore(LocalContext.current)
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(24.dp)) {
         LocationEnable(dataStore, scope)
-        SmsEnable(dataStore, scope)
+        if (permissionHandler.telephonyAvailable && permissionHandler.bleAvailable) {
+            SmsEnable(dataStore, scope)
+        }
     }
 }
 
@@ -171,5 +178,9 @@ fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
 @Preview(showBackground = true)
 @Composable
 fun SettingsPreview() {
-    SettingsScreen(navController = rememberNavController(), title = AppScreen.Settings.route)
+    SettingsScreen(
+        navController = rememberNavController(),
+        permissionHandler = PermissionHandler(LocalContext.current),
+        title = AppScreen.Settings.route
+    )
 }
