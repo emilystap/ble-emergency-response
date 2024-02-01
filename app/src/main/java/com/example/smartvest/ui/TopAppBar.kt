@@ -14,7 +14,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavHostController
-import com.example.smartvest.AppScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

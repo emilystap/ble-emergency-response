@@ -3,6 +3,7 @@ package com.example.smartvest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.example.smartvest.ui.AppNav
 import com.example.smartvest.ui.theme.SmartVestTheme
 
 class MainActivity : ComponentActivity() {

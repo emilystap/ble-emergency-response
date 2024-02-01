@@ -1,11 +1,9 @@
-package com.example.smartvest
+package com.example.smartvest.ui
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.smartvest.ui.HomeScreen
-import com.example.smartvest.ui.SettingsScreen
 
 sealed class AppScreen(val route: String) {
     data object Home : AppScreen("home")
