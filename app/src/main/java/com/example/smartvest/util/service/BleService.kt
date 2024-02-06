@@ -1,4 +1,4 @@
-package com.example.smartvest.util
+package com.example.smartvest.util.service
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -51,6 +51,13 @@ class BleService : Service() {
     private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
     private var bleServices: List<BluetoothGattService>? = null
 
+    companion object {
+        const val ACTION_GATT_CONNECTED =
+            "com.example.smartvest.util.BleService.ACTION_GATT_CONNECTED"  //** TODO: Figure out Intent, Action
+        const val ACTION_GATT_DISCONNECTED =
+            "com.example.smartvest.util.BleService.ACTION_GATT_DISCONNECTED"
+    }
+
     override fun onCreate() {
         HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND).apply {
             start()
@@ -92,11 +99,13 @@ class BleService : Service() {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connected to GATT server")
                 connectionState = BluetoothProfile.STATE_CONNECTED
+                broadcast(ACTION_GATT_CONNECTED)  //** TODO: Figure out Intent, Action
 
                 bleGatt?.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "Disconnected from GATT server")
                 connectionState = BluetoothProfile.STATE_DISCONNECTED
+                broadcast(ACTION_GATT_DISCONNECTED)
             }
         }
 

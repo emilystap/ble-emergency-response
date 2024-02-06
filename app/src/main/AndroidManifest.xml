@@ -21,7 +21,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartVest"
         >
-        <service android:name=".util.BleService" />
+        <service android:name=".util.service.BleService" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
