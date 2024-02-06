@@ -26,8 +26,6 @@ import android.os.Process
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 
 private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "RN4870"  //** TODO: Verify name/set through PIC
@@ -55,9 +53,6 @@ class BleService : Service() {
     private var bleGatt: BluetoothGatt? = null
     private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
     private var bleServices: List<BluetoothGattService>? = null
-
-    val connected: StateFlow<Int> = MutableStateFlow(connectionState)
-    val services: StateFlow<List<BluetoothGattService>?> = MutableStateFlow(bleServices)
 
     inner class LocalBinder : Binder() {
         fun getService() : BleService {
