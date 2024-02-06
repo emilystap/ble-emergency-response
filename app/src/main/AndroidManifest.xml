@@ -22,6 +22,7 @@
         android:theme="@style/Theme.SmartVest"
         >
         <service android:name=".util.service.BleService" />
+        <service android:name=".util.service.SmsService" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

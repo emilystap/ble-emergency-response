@@ -39,17 +39,18 @@ class BleService : Service() {
     private var serviceLooper: Looper? = null
     private var serviceHandler: Handler? = null
 
+    private val scanFilter: ScanFilter = ScanFilter.Builder()
+        .setDeviceAddress(DEVICE_ADDRESS).build()
+
     private val bluetoothManager: BluetoothManager = getSystemService(BLUETOOTH_SERVICE)
             as BluetoothManager
     private val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
     private val bleScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-    private val scanFilter: ScanFilter = ScanFilter.Builder()
-        .setDeviceAddress(DEVICE_ADDRESS).build()
 
     private var bleDevice: BluetoothDevice? = null
     private var bleGatt: BluetoothGatt? = null
-    private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
     private var bleServices: List<BluetoothGattService>? = null
+    private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
 
     companion object {
         const val ACTION_GATT_CONNECTED =
