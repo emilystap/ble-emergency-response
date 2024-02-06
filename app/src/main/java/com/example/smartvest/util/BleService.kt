@@ -16,12 +16,10 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Binder
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
-import android.os.Message
 import android.os.Process
 import android.util.Log
 import android.widget.Toast
@@ -39,8 +37,7 @@ private const val UUID_TRANS_UART_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
 class BleService : Service() {
     private var scanning: Boolean = false
     private var serviceLooper: Looper? = null
-    private var serviceHandler: ServiceHandler? = null
-    private val binder = LocalBinder()
+    private var serviceHandler: Handler? = null
 
     private val bluetoothManager: BluetoothManager = getSystemService(BLUETOOTH_SERVICE)
             as BluetoothManager
@@ -54,36 +51,12 @@ class BleService : Service() {
     private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
     private var bleServices: List<BluetoothGattService>? = null
 
-    inner class LocalBinder : Binder() {
-        fun getService() : BleService {
-            return this@BleService
-        }
-    }
-
-    private inner class ServiceHandler(looper: Looper) : Handler(looper) {
-        //** TODO: figure out how threads work, update for BLE
-        override fun handleMessage(msg: Message) {
-            // Normally we would do some work here, like download a file.
-            // For our sample, we just sleep for 5 seconds.
-            try {
-                Thread.sleep(5000)
-            } catch (e: InterruptedException) {
-                // Restore interrupt status.
-                Thread.currentThread().interrupt()
-            }
-
-            // Stop the service using the startId, so that we don't stop
-            // the service in the middle of handling another job
-            stopSelf(msg.arg1)
-        }
-    }
-
     override fun onCreate() {
         HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND).apply {
             start()
 
             serviceLooper = looper
-            serviceHandler = ServiceHandler(looper)
+            serviceHandler = Handler(looper)
         }
     }
 
@@ -96,8 +69,8 @@ class BleService : Service() {
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder {
-        return binder
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
     }
 
     override fun onDestroy() {
@@ -173,5 +146,9 @@ class BleService : Service() {
             gatt.close()
             bleGatt = null
         }
+    }
+
+    private fun broadcast(action: String) {
+        sendBroadcast(Intent(action))
     }
 }
