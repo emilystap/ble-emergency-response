@@ -37,7 +37,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.R
 import com.example.smartvest.ui.theme.SmartVestTheme
-import kotlinx.coroutines.launch
 
 private const val TAG = "HomeScreen"
 
@@ -62,6 +61,7 @@ fun HomeScreen(
     }
 }
 
+/* TODO: add buttons to start tracking, refresh connection */
 @Composable
 fun ConnectionStatus(
     modifier: Modifier = Modifier,
@@ -169,7 +169,7 @@ fun SMSAlertDialog(
 ) {
     AlertDialog(
         icon = { Icon(Icons.Default.Warning, contentDescription = "Warning") },
-        title = { Text(text = stringResource(id = R.string.sms_alert_dialog_title)) },  //** TODO: add check for location disabled
+        title = { Text(text = stringResource(id = R.string.sms_alert_dialog_title)) },  /* TODO: add check for location disabled */
         text = { Text(text = stringResource(id = R.string.sms_alert_dialog_text)) },
         onDismissRequest = { onDismiss() },
         confirmButton = {

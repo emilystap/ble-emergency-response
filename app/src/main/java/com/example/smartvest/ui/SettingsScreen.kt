@@ -225,7 +225,7 @@ fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
         ),
         keyboardActions = KeyboardActions(
             onDone = {
-                //** TODO: validate number
+                /* TODO: validate number */
                 if (text.length == 10) {
                     keyboardController?.hide()
                     focusManager.clearFocus()

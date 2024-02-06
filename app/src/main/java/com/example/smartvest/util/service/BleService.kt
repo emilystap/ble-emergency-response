@@ -26,12 +26,14 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 
 private const val TAG = "BleService"
-private const val DEVICE_ADDRESS = "RN4870"  //** TODO: Verify name/set through PIC
+private const val DEVICE_ADDRESS = "RN4870"  /* TODO: Verify name/set through PIC */
 private const val SCAN_TIMEOUT_PERIOD: Long = 10000  // 10 seconds
 
 private const val UUID_TRANS_UART = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
 private const val UUID_TRANS_UART_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
 private const val UUID_TRANS_UART_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
+
+/* TODO: Switch to Foreground Service ? */
 
 @SuppressLint("MissingPermission")
 class BleService : Service() {
@@ -54,7 +56,7 @@ class BleService : Service() {
 
     companion object {
         const val ACTION_GATT_CONNECTED =
-            "com.example.smartvest.util.service.BleService.ACTION_GATT_CONNECTED"  //** TODO: Figure out Intent, Action
+            "com.example.smartvest.util.service.BleService.ACTION_GATT_CONNECTED"  /* TODO: Figure out Intent Actions */
         const val ACTION_GATT_DISCONNECTED =
             "com.example.smartvest.util.service.BleService.ACTION_GATT_DISCONNECTED"
     }
@@ -69,7 +71,7 @@ class BleService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        //** TODO: figure out how threads work, update for BLE
+        /* TODO: figure out how threads work, update for BLE Service */
         Toast.makeText(this, "Starting BLE Service", Toast.LENGTH_SHORT).show()
         scan()
 
@@ -100,7 +102,7 @@ class BleService : Service() {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connected to GATT server")
                 connectionState = BluetoothProfile.STATE_CONNECTED
-                broadcast(ACTION_GATT_CONNECTED)  //** TODO: Figure out Intent, Action
+                broadcast(ACTION_GATT_CONNECTED)
 
                 bleGatt?.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -112,7 +114,7 @@ class BleService : Service() {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d(TAG, "Services discovered")  //** TODO: implement
+                Log.d(TAG, "Services discovered")
                 bleServices = gatt?.services
             } else {
                 Log.w(TAG, "Service discovery failed: $status")
@@ -126,7 +128,7 @@ class BleService : Service() {
                     this,
                     Manifest.permission.BLUETOOTH_SCAN
                 ) != PackageManager.PERMISSION_GRANTED
-            ) return  //** TODO: add permission request, callback
+            ) return  /* TODO: add permission request, callback */
 
             serviceHandler?.postDelayed({
                 scanning = false
