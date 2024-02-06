@@ -53,9 +53,9 @@ class BleService : Service() {
 
     companion object {
         const val ACTION_GATT_CONNECTED =
-            "com.example.smartvest.util.BleService.ACTION_GATT_CONNECTED"  //** TODO: Figure out Intent, Action
+            "com.example.smartvest.util.service.BleService.ACTION_GATT_CONNECTED"  //** TODO: Figure out Intent, Action
         const val ACTION_GATT_DISCONNECTED =
-            "com.example.smartvest.util.BleService.ACTION_GATT_DISCONNECTED"
+            "com.example.smartvest.util.service.BleService.ACTION_GATT_DISCONNECTED"
     }
 
     override fun onCreate() {
