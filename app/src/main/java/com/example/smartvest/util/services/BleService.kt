@@ -14,6 +14,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Handler
@@ -22,11 +23,10 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.Process
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 
 private const val TAG = "BleService"
-private const val DEVICE_ADDRESS = "RN4870"  /* TODO: Verify name/set through PIC */
+private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
 private const val SCAN_TIMEOUT_PERIOD: Long = 10000  // 10 seconds
 
 private const val UUID_TRANS_UART = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
@@ -43,11 +43,11 @@ class BleService : Service() {
 
     private val scanFilter: ScanFilter = ScanFilter.Builder()
         .setDeviceAddress(DEVICE_ADDRESS).build()
+    private val scanSettings: ScanSettings = ScanSettings.Builder().build()
 
-    private val bluetoothManager: BluetoothManager = getSystemService(BLUETOOTH_SERVICE)
-            as BluetoothManager
-    private val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-    private val bleScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+    private lateinit var bluetoothManager: BluetoothManager
+    private lateinit var bluetoothAdapter: BluetoothAdapter
+    private lateinit var bleScanner: BluetoothLeScanner
 
     private var bleDevice: BluetoothDevice? = null
     private var bleGatt: BluetoothGatt? = null
@@ -62,7 +62,12 @@ class BleService : Service() {
     }
 
     override fun onCreate() {
-        HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND).apply {
+        bluetoothManager = this.getSystemService(BLUETOOTH_SERVICE)
+                as BluetoothManager
+        bluetoothAdapter = bluetoothManager.adapter
+        bleScanner = bluetoothAdapter.bluetoothLeScanner
+
+        HandlerThread("BleHandlerThread", Process.THREAD_PRIORITY_BACKGROUND).apply {
             start()
 
             serviceLooper = looper
@@ -71,8 +76,7 @@ class BleService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        /* TODO: figure out how threads work, update for BLE Service */
-        Toast.makeText(this, "Starting BLE Service", Toast.LENGTH_SHORT).show()
+        Log.d(TAG, "Starting BLE Service")
         scan()
 
         // Restart service if interrupted
@@ -84,7 +88,7 @@ class BleService : Service() {
     }
 
     override fun onDestroy() {
-        Toast.makeText(this, "Closing BLE Service", Toast.LENGTH_SHORT).show()
+        Log.d(TAG, "Stopping BLE Service")
         close()  // end GATT connection
     }
 
@@ -137,7 +141,7 @@ class BleService : Service() {
             }, SCAN_TIMEOUT_PERIOD)  // stop scanning after timeout period
 
             scanning = true
-            bleScanner.startScan(listOf(scanFilter), null, scanCallback)
+            bleScanner.startScan(listOf(scanFilter), scanSettings, scanCallback)
             Log.d(TAG, "Scan started")
         } else {
             scanning = false
