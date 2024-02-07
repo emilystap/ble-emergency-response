@@ -186,8 +186,18 @@ class BleService : Service() {
         }
     }
 
-    private fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
+    fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
         bleGatt?.readCharacteristic(characteristic) ?: run {
+            Log.w(TAG, "Gatt Server not initialized")
+        }
+    }
+
+    fun writeCharacteristic(
+        characteristic: BluetoothGattCharacteristic,
+        value: ByteArray,
+        writeType: Int = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT  /* TODO: Figure out write type */
+    ) {
+        bleGatt?.writeCharacteristic(characteristic, value, writeType) ?: run {
             Log.w(TAG, "Gatt Server not initialized")
         }
     }
