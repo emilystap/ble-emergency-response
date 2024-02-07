@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
@@ -124,6 +125,18 @@ class BleService : Service() {
                 Log.w(TAG, "Service discovery failed: $status")
             }
         }
+
+        override fun onCharacteristicRead(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            value: ByteArray,
+            status: Int
+        ) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                /* TODO: Handle characteristic read success */
+                return
+            }
+        }
     }
 
     private fun scan() {
@@ -161,6 +174,12 @@ class BleService : Service() {
         bleGatt?.let { gatt ->
             gatt.close()
             bleGatt = null
+        }
+    }
+
+    private fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
+        bleGatt?.readCharacteristic(characteristic) ?: run {
+            Log.w(TAG, "Gatt Server not initialized")
         }
     }
 
