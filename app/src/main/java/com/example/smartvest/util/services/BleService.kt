@@ -183,6 +183,15 @@ class BleService : Service() {
         }
     }
 
+    fun setCharacteristicNotification(
+        characteristic: BluetoothGattCharacteristic,
+        enable: Boolean
+    ) {
+        bleGatt?.setCharacteristicNotification(characteristic, enable) ?: run {
+            Log.w(TAG, "Gatt Server not initialized")
+        }
+    }
+
     private fun broadcast(action: String) {
         sendBroadcast(Intent(action))
     }
