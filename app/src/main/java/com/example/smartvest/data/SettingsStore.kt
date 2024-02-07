@@ -27,19 +27,19 @@ class SettingsStore(
         val STORED_SMS_NUMBER = stringPreferencesKey("stored_sms_number")
     }
 
-    suspend fun setSmsEnable(smsEnabled: Boolean) {
+    suspend fun setSmsEnabled(smsEnabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[SMS_ENABLED] = smsEnabled
         }
     }
 
-    suspend fun setLocationEnable(locationEnabled: Boolean) {
+    suspend fun setLocationEnabled(locationEnabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[LOCATION_ENABLED] = locationEnabled
         }
     }
 
-    suspend fun setSmsNumber(storedSmsNumber: String) {
+    suspend fun setStoredSmsNumber(storedSmsNumber: String) {
         context.dataStore.edit { preferences ->
             preferences[STORED_SMS_NUMBER] = storedSmsNumber
         }

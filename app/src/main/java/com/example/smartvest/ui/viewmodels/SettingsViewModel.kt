@@ -7,13 +7,30 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class SettingsViewModel : ViewModel() {
-    private lateinit var dataStore: SettingsStore
+class SettingsViewModel(
+    private val settingsStore: SettingsStore
+) : ViewModel() {
+    private var locationEnabled = settingsStore.locationEnabled
+    private var smsEnabled = settingsStore.smsEnabled
+    private var storedSmsNumber = settingsStore.storedSmsNumber
 
-    private var locationEnabled: Boolean = false
-    private var smsEnabled: Boolean = false
-    private lateinit var storedSmsNumber: String
-    private val _uiState = MutableStateFlow(SettingsUiState())
+    private val _uiState = MutableStateFlow(SettingsUiState(
+        locationEnabled = locationEnabled,
+        smsEnabled = smsEnabled,
+        storedSmsNumber = storedSmsNumber
+    ))
 
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+
+    fun updateLocationEnabled(enabled: Boolean) {
+        //settingsStore.setLocationEnabled(enabled)
+    }
+
+    fun updateSmsEnabled(enabled: Boolean) {
+        //settingsStore.setSmsEnabled(enabled)
+    }
+
+    fun updateStoredSmsNumber(number: String) {
+        //settingsStore.setStoredSmsNumber(number)
+    }
 }

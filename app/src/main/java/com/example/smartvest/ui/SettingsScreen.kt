@@ -37,6 +37,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.data.SettingsStore
 import com.example.smartvest.ui.theme.SmartVestTheme
+import com.example.smartvest.ui.viewmodels.SettingsViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -44,6 +45,7 @@ private const val TAG = "SettingsScreen"  // used for logging
 
 @Composable
 fun SettingsScreen(
+    //settingsViewModel: SettingsViewModel = SettingsViewModel(SettingsStore(LocalContext.current)),
     navController: NavHostController,
     title: String? = null
 ) {
@@ -89,7 +91,7 @@ fun LocationEnable(
             Log.d(TAG, "Location permissions denied")
             scope.launch {
                 // disable location tracking if permission denied
-                dataStore.setLocationEnable(false)
+                dataStore.setLocationEnabled(false)
             }
         }
     }
@@ -104,7 +106,7 @@ fun LocationEnable(
             onCheckedChange = {
                 enabled = it
                 scope.launch {
-                    dataStore.setLocationEnable(enabled)
+                    dataStore.setLocationEnabled(enabled)
                 }
                 if (enabled) {
                     // request location permissions if tracking is enabled
@@ -144,7 +146,7 @@ fun SmsEnable(
             Log.d(TAG, "SMS permission denied")
             // disable SMS sending if permission denied
             scope.launch {
-                dataStore.setSmsEnable(false)
+                dataStore.setSmsEnabled(false)
             }
         }
     }
@@ -159,7 +161,7 @@ fun SmsEnable(
             onCheckedChange = {
                 enabled = it
                 scope.launch {
-                    dataStore.setSmsEnable(enabled)
+                    dataStore.setSmsEnabled(enabled)
                 }
                 // request SMS permission if sending is enabled
                 if (enabled) {
@@ -231,7 +233,7 @@ fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
                     focusManager.clearFocus()
 
                     scope.launch {
-                        dataStore.setSmsNumber(text)
+                        dataStore.setStoredSmsNumber(text)
                     }
                 }
                 else {
