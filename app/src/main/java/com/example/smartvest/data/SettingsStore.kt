@@ -49,7 +49,7 @@ class SettingsStore(
     val smsEnabled: Flow<Boolean> = context.dataStore.data
         .catch {
             if (it is IOException) {
-                Log.e(TAG, "Error reading preferences", it)
+                Log.e(TAG, "Error reading smsEnabled preference", it)
                 emit(emptyPreferences())  // use default preference
             }
             else {
@@ -63,7 +63,7 @@ class SettingsStore(
     val locationEnabled: Flow<Boolean> = context.dataStore.data
         .catch {
             if (it is IOException) {
-                Log.e(TAG, "Error reading preferences", it)
+                Log.e(TAG, "Error reading locationEnabled preference", it)
                 emit(emptyPreferences())  // use default preference
             }
             else {
@@ -77,7 +77,7 @@ class SettingsStore(
     val storedSmsNumber: Flow<String> = context.dataStore.data
         .catch {
             if (it is IOException) {
-                Log.e(TAG, "Error reading preferences", it)
+                Log.e(TAG, "Error reading storedSmsNumber preference", it)
                 emit(emptyPreferences())  // use default preference
             }
             else {
