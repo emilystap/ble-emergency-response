@@ -22,30 +22,30 @@ class SettingsStore(
         val Context.dataStore: DataStore<Preferences> by
             preferencesDataStore(name = "settings")
 
-        val SMS_ENABLE = booleanPreferencesKey("sms_enable")
-        val LOCATION_ENABLE = booleanPreferencesKey("location_enable")
-        val SMS_NUMBER = stringPreferencesKey("sms_number")
+        val SMS_ENABLED = booleanPreferencesKey("sms_enabled")
+        val LOCATION_ENABLED = booleanPreferencesKey("location_enabled")
+        val STORED_SMS_NUMBER = stringPreferencesKey("stored_sms_number")
     }
 
-    suspend fun setSmsEnable(smsEnable: Boolean) {
+    suspend fun setSmsEnable(smsEnabled: Boolean) {
         context.dataStore.edit { preferences ->
-            preferences[SMS_ENABLE] = smsEnable
+            preferences[SMS_ENABLED] = smsEnabled
         }
     }
 
-    suspend fun setLocationEnable(locationEnable: Boolean) {
+    suspend fun setLocationEnable(locationEnabled: Boolean) {
         context.dataStore.edit { preferences ->
-            preferences[LOCATION_ENABLE] = locationEnable
+            preferences[LOCATION_ENABLED] = locationEnabled
         }
     }
 
-    suspend fun setSmsNumber(smsNumber: String) {
+    suspend fun setSmsNumber(storedSmsNumber: String) {
         context.dataStore.edit { preferences ->
-            preferences[SMS_NUMBER] = smsNumber
+            preferences[STORED_SMS_NUMBER] = storedSmsNumber
         }
     }
 
-    val smsEnable: Flow<Boolean> = context.dataStore.data
+    val smsEnabled: Flow<Boolean> = context.dataStore.data
         .catch {
             if (it is IOException) {
                 Log.e(TAG, "Error reading preferences", it)
@@ -56,10 +56,10 @@ class SettingsStore(
             }
         }
         .map { preferences ->
-            preferences[SMS_ENABLE] ?: false  // assume setting is disabled
+            preferences[SMS_ENABLED] ?: false  // assume setting is disabled
         }
 
-    val locationEnable: Flow<Boolean> = context.dataStore.data
+    val locationEnabled: Flow<Boolean> = context.dataStore.data
         .catch {
             if (it is IOException) {
                 Log.e(TAG, "Error reading preferences", it)
@@ -70,10 +70,10 @@ class SettingsStore(
             }
         }
         .map { preferences ->
-            preferences[LOCATION_ENABLE] ?: false  // assume setting is disabled
+            preferences[LOCATION_ENABLED] ?: false  // assume setting is disabled
         }
 
-    val smsNumber: Flow<String> = context.dataStore.data
+    val storedSmsNumber: Flow<String> = context.dataStore.data
         .catch {
             if (it is IOException) {
                 Log.e(TAG, "Error reading preferences", it)
@@ -84,6 +84,6 @@ class SettingsStore(
             }
         }
         .map { preferences ->
-            preferences[SMS_NUMBER] ?: ""
+            preferences[STORED_SMS_NUMBER] ?: ""
         }
 }

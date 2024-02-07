@@ -77,7 +77,7 @@ fun LocationEnable(
     dataStore: SettingsStore,
     scope: CoroutineScope
 ) {
-    var enabled = dataStore.locationEnable.collectAsState(initial = false).value
+    var enabled = dataStore.locationEnabled.collectAsState(initial = false).value
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()  // used to request permissions
@@ -132,7 +132,7 @@ fun SmsEnable(
     dataStore: SettingsStore,
     scope: CoroutineScope
 ) {
-    var enabled = dataStore.smsEnable.collectAsState(initial = false).value
+    var enabled = dataStore.smsEnabled.collectAsState(initial = false).value
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()  // used to request permissions
@@ -188,7 +188,7 @@ fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
     var valid by remember { mutableStateOf(true) }
     var text by remember { mutableStateOf("") }
 
-    val storedSmsNumber = dataStore.smsNumber.collectAsState(initial = "").value
+    val storedSmsNumber = dataStore.storedSmsNumber.collectAsState(initial = "").value
 
     OutlinedTextField(
         value = text,
