@@ -30,10 +30,6 @@ private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
 private const val SCAN_TIMEOUT_PERIOD: Long = 10000  // 10 seconds
 
-private const val UUID_TRANS_UART = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
-private const val UUID_TRANS_UART_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
-private const val UUID_TRANS_UART_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
-
 /* TODO: Switch to Foreground Service?  */
 
 @SuppressLint("MissingPermission")
@@ -56,6 +52,10 @@ class BleService : Service() {
     private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
 
     companion object {
+        const val UUID_TRANS_UART = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
+        const val UUID_TRANS_UART_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
+        const val UUID_TRANS_UART_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
+
         const val ACTION_GATT_CONNECTED =
             "com.example.smartvest.util.service.BleService.ACTION_GATT_CONNECTED"  /* TODO: Figure out Intent Actions */
         const val ACTION_GATT_DISCONNECTED =
