@@ -134,7 +134,7 @@ class BleService : Service() {
         ) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 /* TODO: Handle characteristic read success */
-                return
+                Log.d(TAG, "Read characteristic: ${characteristic.uuid}, value: $value")
             }
         }
     }
