@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.smartvest.ui.AppNav
 import com.example.smartvest.ui.theme.SmartVestTheme
-import com.example.smartvest.util.service.BleService
+import com.example.smartvest.util.services.BleService
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

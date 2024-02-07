@@ -62,7 +62,7 @@ fun SettingsScreen(
 @Composable
 fun SettingsMenu() {
     val context = LocalContext.current
-    val dataStore = SettingsStore(context)
+    val dataStore = SettingsStore(context)  /* TODO: Move to view model */
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(24.dp)) {
