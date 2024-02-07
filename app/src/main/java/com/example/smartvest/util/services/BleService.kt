@@ -137,6 +137,15 @@ class BleService : Service() {
                 Log.d(TAG, "Read characteristic: ${characteristic.uuid}, value: $value")
             }
         }
+
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            value: ByteArray
+        ) {
+            /* TODO: Handle characteristic change */
+            Log.d(TAG, "Characteristic changed: ${characteristic.uuid}, value: $value")
+        }
     }
 
     private fun scan() {
