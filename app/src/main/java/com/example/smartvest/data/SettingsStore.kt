@@ -14,13 +14,14 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
+
+private const val TAG = "SettingsStore"
+
 class SettingsStore(
     private val context: Context
 ) {
     private companion object {
-        const val TAG = "SettingsStore"  // used for logging
-        val Context.dataStore: DataStore<Preferences> by
-            preferencesDataStore(name = "settings")
+        val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
         val SMS_ENABLED = booleanPreferencesKey("sms_enabled")
         val LOCATION_ENABLED = booleanPreferencesKey("location_enabled")
