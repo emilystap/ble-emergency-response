@@ -73,6 +73,7 @@ class BleService : Service() {
     enum class Broadcasts {
         GATT_CONNECTED,
         GATT_DISCONNECTED,
+        SERVICES_DISCOVERED,
         CHARACTERISTIC_READ,
         CHARACTERISTIC_CHANGED
     }
@@ -135,6 +136,7 @@ class BleService : Service() {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Services discovered")
                 bleServices = gatt?.services
+                broadcast(Broadcasts.SERVICES_DISCOVERED.name)
             } else {
                 Log.w(TAG, "Service discovery failed: $status")
             }
@@ -225,7 +227,7 @@ class BleService : Service() {
     private fun writeCharacteristic(
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray,
-        writeType: Int = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT  /* TODO: Figure out write types */
+        writeType: Int = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
     ) {
         bleGatt?.writeCharacteristic(characteristic, value, writeType) ?: run {
             Log.w(TAG, "Gatt Server not initialized")
