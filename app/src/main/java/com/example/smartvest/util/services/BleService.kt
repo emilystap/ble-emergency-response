@@ -25,18 +25,21 @@ import android.os.Looper
 import android.os.Process
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import com.example.smartvest.R
 import com.example.smartvest.data.SettingsStore
 
 private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
 private const val SCAN_TIMEOUT_PERIOD: Long = 10000  // 10 seconds
+private const val UUID_TRANS_UART = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
+private const val UUID_TRANS_UART_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
+private const val UUID_TRANS_UART_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
 
 /* TODO: Switch to Foreground Service, Type: Connected Device */
 
 @SuppressLint("MissingPermission")
-class BleService(
-    private val settingsService: SettingsStore
-) : Service() {
+class BleService : Service() {
     private var scanning: Boolean = false
     private var serviceLooper: Looper? = null
     private var serviceHandler: Handler? = null
@@ -55,14 +58,20 @@ class BleService(
     private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
 
     companion object {
-        const val UUID_TRANS_UART = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
-        const val UUID_TRANS_UART_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
-        const val UUID_TRANS_UART_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
+        const val SERVICE_ID = 1
+        const val NOTIFICATION_CHANNEL_ID = "services.BleService"
+        const val NOTIFICATION_CHANNEL_NAME = "BleService"
+    }
 
-        const val ACTION_GATT_CONNECTED =
-            "com.example.smartvest.util.service.BleService.ACTION_GATT_CONNECTED"  /* TODO: Figure out Intent Actions */
-        const val ACTION_GATT_DISCONNECTED =
-            "com.example.smartvest.util.service.BleService.ACTION_GATT_DISCONNECTED"
+    enum class Actions {
+        READ,
+        WRITE,
+        REFRESH
+    }
+
+    enum class Broadcasts {
+        GATT_CONNECTED,
+        GATT_DISCONNECTED
     }
 
     override fun onCreate() {
@@ -80,8 +89,7 @@ class BleService(
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.d(TAG, "Starting BLE Service")
-        scan()
+        start()
 
         // Restart service if interrupted
         return START_STICKY
@@ -110,13 +118,13 @@ class BleService(
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connected to GATT server")
                 connectionState = BluetoothProfile.STATE_CONNECTED
-                broadcast(ACTION_GATT_CONNECTED)
+                broadcast(Broadcasts.GATT_CONNECTED.name)
 
                 bleGatt?.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "Disconnected from GATT server")
                 connectionState = BluetoothProfile.STATE_DISCONNECTED
-                broadcast(ACTION_GATT_DISCONNECTED)
+                broadcast(Broadcasts.GATT_DISCONNECTED.name)
             }
         }
 
@@ -149,6 +157,18 @@ class BleService(
             /* TODO: Handle characteristic change */
             Log.d(TAG, "Characteristic changed: ${characteristic.uuid}, value: $value")
         }
+    }
+
+    private fun start() {
+        Log.d(TAG, "Starting BLE Service")
+
+        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText("Tracking active")
+            .setSmallIcon(R.drawable.ic_launcher_foreground).build()
+        startForeground(SERVICE_ID, notification)
+
+        scan()
     }
 
     private fun scan() {

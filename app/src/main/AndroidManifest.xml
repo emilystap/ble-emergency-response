@@ -3,6 +3,9 @@
     <uses-feature android:name="android.hardware.telephony" android:required="true" />
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -12,6 +15,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
 
     <application
+        android:name=".MainApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -21,8 +25,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartVest"
         >
-        <service android:name=".util.services.BleService" />
-        <service android:name=".util.services.SmsService" />
+        <service
+            android:name=".util.services.BleService"
+            android:foregroundServiceType="connectedDevice"
+        />
         <activity
             android:name=".MainActivity"
             android:exported="true"
