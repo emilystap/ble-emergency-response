@@ -28,13 +28,16 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.example.smartvest.R
 import com.example.smartvest.data.SettingsStore
+import java.util.UUID
 
 private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
 private const val SCAN_TIMEOUT_PERIOD: Long = 10000  // 10 seconds
-private const val UUID_TRANS_UART = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
-private const val UUID_TRANS_UART_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
-private const val UUID_TRANS_UART_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
+private const val UUID_UART_SERVICE = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
+private const val UUID_UART_CHARACTERISTIC_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
+private const val UUID_UART_CHARACTERISTIC_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
+private const val UUID_UART_CHARACTERISTIC_CTL = "49535343-4C8A-39B3-2F49-511CFF073B7E"
+private const val EMERGENCY_RESPONSE_CODE = "SOS"
 
 /* TODO: Switch to Foreground Service, Type: Connected Device */
 
@@ -55,6 +58,7 @@ class BleService : Service() {
     private var bleDevice: BluetoothDevice? = null
     private var bleGatt: BluetoothGatt? = null
     private var bleServices: List<BluetoothGattService>? = null
+    private var bleUartService: BluetoothGattService? = null
     private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
 
     companion object {
@@ -74,8 +78,10 @@ class BleService : Service() {
         GATT_CONNECTED,
         GATT_DISCONNECTED,
         SERVICES_DISCOVERED,
+        UART_SERVICE_DISCOVERED,
         CHARACTERISTIC_READ,
-        CHARACTERISTIC_CHANGED
+        CHARACTERISTIC_CHANGED,
+        EMERGENCY_RESPONSE
     }
 
     override fun onCreate() {
@@ -137,6 +143,19 @@ class BleService : Service() {
                 Log.d(TAG, "Services discovered")
                 bleServices = gatt?.services
                 broadcast(Broadcasts.SERVICES_DISCOVERED.name)
+
+                /* TODO: Refactor */
+                bleUartService = bleServices?.find {
+                    it.uuid == UUID.fromString(UUID_UART_SERVICE)
+                }
+                bleUartService?.let {
+                    broadcast(Broadcasts.UART_SERVICE_DISCOVERED.name)
+                    setCharacteristicNotification(
+                        it.getCharacteristic(
+                            UUID.fromString(UUID_UART_CHARACTERISTIC_RX)
+                        ), true)
+                    Log.d(TAG, "UART RX characteristic set to notify")
+                }
             } else {
                 Log.w(TAG, "Service discovery failed: $status")
             }
@@ -165,6 +184,14 @@ class BleService : Service() {
             /* TODO: Handle characteristic change */
             Log.d(TAG, "Characteristic changed: ${characteristic.uuid}, value: $value")
             broadcast(Broadcasts.CHARACTERISTIC_CHANGED.name, characteristic, value)
+
+            if (characteristic.uuid == UUID.fromString(UUID_UART_CHARACTERISTIC_RX)) {
+                Log.d(TAG, "Received message: $value")
+                if (value.toString(Charsets.UTF_8) == EMERGENCY_RESPONSE_CODE) {
+                    Log.d(TAG, "Received emergency response code: $value")
+                    broadcast(Broadcasts.EMERGENCY_RESPONSE.name)
+                }
+            }
         }
     }
 
