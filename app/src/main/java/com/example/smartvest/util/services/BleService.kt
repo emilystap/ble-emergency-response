@@ -32,6 +32,7 @@ import java.util.UUID
 
 private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
+private const val DEVICE_NAME = "RN4870-DF62"
 private const val SCAN_TIMEOUT_PERIOD: Long = 10000  // 10 seconds
 private const val UUID_UART_SERVICE = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
 private const val UUID_UART_CHARACTERISTIC_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
@@ -48,7 +49,9 @@ class BleService : Service() {
     private var serviceHandler: Handler? = null
 
     private val scanFilter: ScanFilter = ScanFilter.Builder()
-        .setDeviceAddress(DEVICE_ADDRESS).build()
+        .setDeviceAddress(DEVICE_ADDRESS)
+        .setDeviceName(DEVICE_NAME)
+        .build()
     private val scanSettings: ScanSettings = ScanSettings.Builder().build()
 
     private lateinit var bluetoothManager: BluetoothManager
@@ -117,6 +120,7 @@ class BleService : Service() {
     private val scanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
+
             Log.d(TAG, "Found device: ${result.device.name}")
             bleDevice = result.device
             connect()
@@ -152,9 +156,9 @@ class BleService : Service() {
                     broadcast(Broadcasts.UART_SERVICE_DISCOVERED.name)
                     setCharacteristicNotification(
                         it.getCharacteristic(
-                            UUID.fromString(UUID_UART_CHARACTERISTIC_RX)
+                            UUID.fromString(UUID_UART_CHARACTERISTIC_TX)
                         ), true)
-                    Log.d(TAG, "UART RX characteristic set to notify")
+                    Log.d(TAG, "UART TX characteristic set to notify")
                 }
             } else {
                 Log.w(TAG, "Service discovery failed: $status")
