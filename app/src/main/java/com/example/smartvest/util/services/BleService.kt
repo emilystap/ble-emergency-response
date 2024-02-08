@@ -25,15 +25,18 @@ import android.os.Looper
 import android.os.Process
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import com.example.smartvest.data.SettingsStore
 
 private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
 private const val SCAN_TIMEOUT_PERIOD: Long = 10000  // 10 seconds
 
-/* TODO: Switch to Foreground Service?  */
+/* TODO: Switch to Foreground Service, Type: Connected Device */
 
 @SuppressLint("MissingPermission")
-class BleService : Service() {
+class BleService(
+    private val settingsService: SettingsStore
+) : Service() {
     private var scanning: Boolean = false
     private var serviceLooper: Looper? = null
     private var serviceHandler: Handler? = null
