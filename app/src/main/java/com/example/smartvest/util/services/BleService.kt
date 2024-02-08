@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
@@ -18,17 +19,19 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Looper
 import android.os.Process
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.example.smartvest.R
-import com.example.smartvest.data.SettingsStore
 import java.util.UUID
+
 
 private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
@@ -38,6 +41,7 @@ private const val UUID_UART_SERVICE = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
 private const val UUID_UART_CHARACTERISTIC_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
 private const val UUID_UART_CHARACTERISTIC_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
 private const val UUID_UART_CHARACTERISTIC_CTL = "49535343-4C8A-39B3-2F49-511CFF073B7E"
+private const val UUID_CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb"
 private const val EMERGENCY_RESPONSE_CODE = "SOS"
 
 /* TODO: Switch to Foreground Service, Type: Connected Device */
@@ -133,6 +137,7 @@ class BleService : Service() {
                 Log.d(TAG, "Connected to GATT server")
                 connectionState = BluetoothProfile.STATE_CONNECTED
                 broadcast(Broadcasts.GATT_CONNECTED.name)
+                /* TODO: Handle disconnects/reconnects */
 
                 bleGatt?.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -142,6 +147,7 @@ class BleService : Service() {
             }
         }
 
+        @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Services discovered")
@@ -160,6 +166,7 @@ class BleService : Service() {
                         ), true)
                     Log.d(TAG, "UART TX characteristic set to notify")
                 }
+
             } else {
                 Log.w(TAG, "Service discovery failed: $status")
             }
@@ -186,10 +193,9 @@ class BleService : Service() {
             value: ByteArray
         ) {
             /* TODO: Handle characteristic change */
-            Log.d(TAG, "Characteristic changed: ${characteristic.uuid}, value: $value")
             broadcast(Broadcasts.CHARACTERISTIC_CHANGED.name, characteristic, value)
 
-            if (characteristic.uuid == UUID.fromString(UUID_UART_CHARACTERISTIC_RX)) {
+            if (characteristic.uuid == UUID.fromString(UUID_UART_CHARACTERISTIC_TX)) {
                 Log.d(TAG, "Received message: $value")
                 if (value.toString(Charsets.UTF_8) == EMERGENCY_RESPONSE_CODE) {
                     Log.d(TAG, "Received emergency response code: $value")
@@ -237,7 +243,7 @@ class BleService : Service() {
     private fun connect() {
         bleGatt = bleDevice?.connectGatt(
             this,
-            false,
+            true,
             gattCallback
         )
     }
@@ -255,6 +261,7 @@ class BleService : Service() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun writeCharacteristic(
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray,
@@ -265,6 +272,7 @@ class BleService : Service() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun setCharacteristicNotification(
         characteristic: BluetoothGattCharacteristic,
         enable: Boolean
@@ -272,6 +280,18 @@ class BleService : Service() {
         bleGatt?.setCharacteristicNotification(characteristic, enable) ?: run {
             Log.w(TAG, "Gatt Server not initialized")
         }
+        val descriptor: BluetoothGattDescriptor = characteristic
+            .getDescriptor(UUID.fromString(UUID_CLIENT_CHARACTERISTIC_CONFIG))
+        if (enable)
+            bleGatt?.writeDescriptor(
+                descriptor,
+                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+            )
+        else
+            bleGatt?.writeDescriptor(
+                descriptor,
+                BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
+            )
     }
 
     private fun broadcast(action: String) {

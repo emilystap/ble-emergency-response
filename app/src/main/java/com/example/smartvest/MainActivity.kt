@@ -2,19 +2,21 @@ package com.example.smartvest
 
 import android.content.Intent
 import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.example.smartvest.ui.AppNav
 import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.util.services.BleService
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        /* TODO: Use PermissionHandler */
         ActivityCompat.requestPermissions(
             this,
             arrayOf(
@@ -28,7 +30,7 @@ class MainActivity : ComponentActivity() {
             ),
             0
         )
-
+        /* TODO: Wrap service start in permission response */
         startService(Intent(this, BleService::class.java))
 
         setContent {
