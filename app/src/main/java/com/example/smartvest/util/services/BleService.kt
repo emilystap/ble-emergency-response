@@ -66,12 +66,15 @@ class BleService : Service() {
     enum class Actions {
         READ,
         WRITE,
-        REFRESH
+        REFRESH,
+        SET_NOTIFICATION
     }
 
     enum class Broadcasts {
         GATT_CONNECTED,
-        GATT_DISCONNECTED
+        GATT_DISCONNECTED,
+        CHARACTERISTIC_READ,
+        CHARACTERISTIC_CHANGED
     }
 
     override fun onCreate() {
@@ -146,6 +149,9 @@ class BleService : Service() {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 /* TODO: Handle characteristic read success */
                 Log.d(TAG, "Read characteristic: ${characteristic.uuid}, value: $value")
+                broadcast(Broadcasts.CHARACTERISTIC_READ.name, characteristic, value)
+            } else {
+                Log.w(TAG, "Characteristic read failed: $status")
             }
         }
 
@@ -156,6 +162,7 @@ class BleService : Service() {
         ) {
             /* TODO: Handle characteristic change */
             Log.d(TAG, "Characteristic changed: ${characteristic.uuid}, value: $value")
+            broadcast(Broadcasts.CHARACTERISTIC_CHANGED.name, characteristic, value)
         }
     }
 
@@ -209,22 +216,13 @@ class BleService : Service() {
         }
     }
 
-    fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
+    private fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
         bleGatt?.readCharacteristic(characteristic) ?: run {
             Log.w(TAG, "Gatt Server not initialized")
         }
     }
 
-    fun setCharacteristicNotification(
-        characteristic: BluetoothGattCharacteristic,
-        enable: Boolean
-    ) {
-        bleGatt?.setCharacteristicNotification(characteristic, enable) ?: run {
-            Log.w(TAG, "Gatt Server not initialized")
-        }
-    }
-
-    fun writeCharacteristic(
+    private fun writeCharacteristic(
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray,
         writeType: Int = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT  /* TODO: Figure out write types */
@@ -234,7 +232,27 @@ class BleService : Service() {
         }
     }
 
+    private fun setCharacteristicNotification(
+        characteristic: BluetoothGattCharacteristic,
+        enable: Boolean
+    ) {
+        bleGatt?.setCharacteristicNotification(characteristic, enable) ?: run {
+            Log.w(TAG, "Gatt Server not initialized")
+        }
+    }
+
     private fun broadcast(action: String) {
         sendBroadcast(Intent(action))
+    }
+
+    private fun broadcast(
+        action: String,
+        characteristic: BluetoothGattCharacteristic,
+        value: ByteArray
+    ) {
+        val intent = Intent(action)
+        intent.putExtra("uuid", characteristic.uuid.toString())
+        intent.putExtra("value", value)
+        sendBroadcast(intent)
     }
 }
