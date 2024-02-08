@@ -29,6 +29,10 @@
             android:name=".util.services.BleService"
             android:foregroundServiceType="connectedDevice"
         />
+        <service
+            android:name=".util.services.SmsService"
+            android:foregroundServiceType="shortService"
+        />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -40,5 +44,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>
