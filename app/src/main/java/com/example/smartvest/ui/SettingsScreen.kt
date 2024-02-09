@@ -1,10 +1,8 @@
 package com.example.smartvest.ui
 
 import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,23 +30,26 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.data.SettingsStore
 import com.example.smartvest.ui.theme.SmartVestTheme
-import com.example.smartvest.ui.viewmodels.SettingsViewModel
+import com.example.smartvest.util.PermissionUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-private const val TAG = "SettingsScreen"  // used for logging
+private const val TAG = "SettingsScreen"
+private var permissionRequestLauncher: ActivityResultLauncher<Array<String>>? = null
 
 @Composable
 fun SettingsScreen(
-    //settingsViewModel: SettingsViewModel = SettingsViewModel(SettingsStore(LocalContext.current)),
     navController: NavHostController,
     title: String? = null
 ) {
+    permissionRequestLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { PermissionUtil.checkPermissionRequestResults(it) }
+
     SmartVestTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -62,39 +63,29 @@ fun SettingsScreen(
 }
 
 @Composable
-fun SettingsMenu() {
+private fun SettingsMenu() {
     val context = LocalContext.current
     val dataStore = SettingsStore(context)  /* TODO: Move to view model */
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(24.dp)) {
-        LocationEnable(context, dataStore, scope)
-        SmsEnable(context, dataStore, scope)
+        LocationEnable(dataStore, scope)
+        SmsEnable(dataStore, scope)
     }
 }
 
 @Composable
-fun LocationEnable(
-    context: Context = LocalContext.current,
+private fun LocationEnable(
     dataStore: SettingsStore,
     scope: CoroutineScope
 ) {
+    val context = LocalContext.current
     var enabled = dataStore.locationEnabled.collectAsState(initial = false).value
 
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()  // used to request permissions
-    ) {
-        if (it.all { permission -> permission.value }) {
-            Log.d(TAG, "Location permissions granted")
-        }
-        else {
-            Log.d(TAG, "Location permissions denied")
-            scope.launch {
-                // disable location tracking if permission denied
-                dataStore.setLocationEnabled(false)
-            }
-        }
-    }
+    val permissions = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
 
     Row {
         Text(
@@ -109,17 +100,10 @@ fun LocationEnable(
                     dataStore.setLocationEnabled(enabled)
                 }
                 if (enabled) {
-                    // request location permissions if tracking is enabled
-                    when (PackageManager.PERMISSION_DENIED) {
-                        ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                            // only need to check for one permission
-                        ) -> launcher.launch(
-                            arrayOf(
-                                Manifest.permission.ACCESS_FINE_LOCATION,
-                                Manifest.permission.ACCESS_COARSE_LOCATION
-                            )
+                    permissionRequestLauncher?.let { launcher ->
+                        PermissionUtil.checkPermissions(
+                            launcher,
+                            permissions
                         )
                     }
                 }
@@ -129,27 +113,14 @@ fun LocationEnable(
 }
 
 @Composable
-fun SmsEnable(
-    context: Context = LocalContext.current,
+private fun SmsEnable(
     dataStore: SettingsStore,
     scope: CoroutineScope
 ) {
+    val context = LocalContext.current
     var enabled = dataStore.smsEnabled.collectAsState(initial = false).value
 
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()  // used to request permissions
-    ) {
-        if (it) {
-            Log.d(TAG, "SMS permission granted")
-        }
-        else {
-            Log.d(TAG, "SMS permission denied")
-            // disable SMS sending if permission denied
-            scope.launch {
-                dataStore.setSmsEnabled(false)
-            }
-        }
-    }
+    val permissions = arrayOf(Manifest.permission.SEND_SMS)
 
     Row {
         Text(
@@ -163,13 +134,12 @@ fun SmsEnable(
                 scope.launch {
                     dataStore.setSmsEnabled(enabled)
                 }
-                // request SMS permission if sending is enabled
                 if (enabled) {
-                    when (PackageManager.PERMISSION_DENIED) {
-                        ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.SEND_SMS
-                        ) -> launcher.launch(Manifest.permission.SEND_SMS)
+                    permissionRequestLauncher?.let { launcher ->
+                        PermissionUtil.checkPermissions(
+                            launcher,
+                            permissions
+                        )
                     }
                 }
             }
@@ -183,7 +153,7 @@ fun SmsEnable(
 }
 
 @Composable
-fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
+private fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 

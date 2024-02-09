@@ -1,4 +1,3 @@
 package com.example.smartvest.util
 
-class LocationUtil {
-}
+class LocationUtil

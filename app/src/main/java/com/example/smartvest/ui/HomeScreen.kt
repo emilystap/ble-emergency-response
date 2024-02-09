@@ -1,9 +1,10 @@
 package com.example.smartvest.ui
 
 import android.Manifest
-import android.content.pm.PackageManager
+import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,30 +33,35 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.R
 import com.example.smartvest.ui.theme.SmartVestTheme
+import com.example.smartvest.util.PermissionUtil
+import com.example.smartvest.util.services.BleService
 
 private const val TAG = "HomeScreen"
+private var permissionLauncher: ActivityResultLauncher<Array<String>>? = null
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,
     title: String? = null
 ) {
-    val context = LocalContext.current
+    permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { PermissionUtil.checkPermissionRequestResults(it) }
+
     SmartVestTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = { TopAppBar(navController, title, canReturn = false) },
             floatingActionButton = {
-                SendFab(context = context)  // floating action button for manually sending SMS
+                SendFab()  // floating action button for manually sending SMS
             }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
-                ConnectionStatus(context = context)
+                ConnectionStatus()
             }
         }
     }
@@ -63,21 +69,17 @@ fun HomeScreen(
 
 /* TODO: add buttons to start tracking, refresh connection */
 @Composable
-fun ConnectionStatus(
-    modifier: Modifier = Modifier,
-    context: android.content.Context = LocalContext.current
-) {
+private fun ConnectionStatus(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     var connected by remember { mutableStateOf(true) }
 
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()  // used to request permissions
+    val blePermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
     ) {
-        if (it.all { permission -> permission.value }) {
-            Log.d(TAG, "BLE permissions granted")
-        }
-        else {
-            Log.d(TAG, "BLE permissions denied")
-        }
+        if (PermissionUtil.checkPermissionRequestResults(it))
+            context.startService(Intent(context, BleService::class.java))  /* TODO: Figure out a cleaner way of doing this */
+        else
+            Log.w(TAG, "Permission check returned false")
     }
 
     Row(modifier = Modifier.padding(24.dp)) {
@@ -87,9 +89,9 @@ fun ConnectionStatus(
         Text(
             text = if (connected) "Connected" else "Disconnected",
             color = (
-                if (connected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.error
-            ),
+                    if (connected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.error
+                    ),
             modifier = modifier.weight(1f)
         )
         FilledTonalButton(
@@ -97,20 +99,10 @@ fun ConnectionStatus(
                 /* TODO: Implement BT connection */
                 connected = !connected
 
-                when (PackageManager.PERMISSION_DENIED) {
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.BLUETOOTH_CONNECT
-                        // only need to check for one permission
-                    ) -> launcher.launch(
-                        arrayOf(
-                            Manifest.permission.BLUETOOTH_ADMIN,
-                            Manifest.permission.BLUETOOTH_SCAN,
-                            Manifest.permission.BLUETOOTH_CONNECT,
-                            Manifest.permission.BLUETOOTH_ADVERTISE
-                        )
-                    )
-                }
+                PermissionUtil.checkPermissions(
+                    blePermissionLauncher,
+                    BleService.permissions
+                )
             }
         ) {
             Text("Refresh")
@@ -119,31 +111,13 @@ fun ConnectionStatus(
 }
 
 @Composable
-fun SendFab(context: android.content.Context = LocalContext.current) {
+private fun SendFab() {
     var openSMSAlertDialog by remember { mutableStateOf(false) }
 
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()  // used to request permissions
-    ) {
-        if (it) {
-            Log.d(TAG, "SMS permission granted")
-        }
-        else {
-            Log.d(TAG, "SMS permission denied")
-        }
-    }
+    val permissions = arrayOf(Manifest.permission.SEND_SMS)
 
     FloatingActionButton(
-        onClick = {
-            when (PackageManager.PERMISSION_DENIED) {
-                ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.SEND_SMS
-                ) -> launcher.launch(Manifest.permission.SEND_SMS)
-            }
-
-            openSMSAlertDialog = true
-        },
+        onClick = { openSMSAlertDialog = true },
         containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
     ) {
@@ -155,15 +129,22 @@ fun SendFab(context: android.content.Context = LocalContext.current) {
             onDismiss = { openSMSAlertDialog = false },
             onConfirm = {
                 openSMSAlertDialog = false
-                Log.d("SMS Alert Dialog", "Alert Confirmed")
+                permissionLauncher?.let { launcher ->
+                    PermissionUtil.checkPermissions(
+                        launcher,
+                        permissions
+                    )
+                }
+
                 /* TODO: Implement SMS sending logic */
+                Log.d("SMS Alert Dialog", "Alert Confirmed")
             }
         )
     }
 }
 
 @Composable
-fun SMSAlertDialog(
+private fun SMSAlertDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
