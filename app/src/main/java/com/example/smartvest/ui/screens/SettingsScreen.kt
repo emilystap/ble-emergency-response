@@ -41,7 +41,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 private const val TAG = "SettingsScreen"
-private var permissionRequestLauncher: ActivityResultLauncher<Array<String>>? = null
+private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<String>>
 
 @Composable
 fun SettingsScreen(
@@ -81,7 +81,6 @@ private fun LocationEnable(
     dataStore: SettingsStore,
     scope: CoroutineScope
 ) {
-    val context = LocalContext.current
     var enabled = dataStore.locationEnabled.collectAsState(initial = false).value
 
     val permissions = arrayOf(
@@ -102,12 +101,10 @@ private fun LocationEnable(
                     dataStore.setLocationEnabled(enabled)
                 }
                 if (enabled) {
-                    permissionRequestLauncher?.let { launcher ->
-                        PermissionUtil.checkPermissions(
-                            launcher,
-                            permissions
-                        )
-                    }
+                    PermissionUtil.checkPermissions(
+                        permissionRequestLauncher,
+                        permissions
+                    )
                 }
             }
         )
@@ -119,7 +116,6 @@ private fun SmsEnable(
     dataStore: SettingsStore,
     scope: CoroutineScope
 ) {
-    val context = LocalContext.current
     var enabled = dataStore.smsEnabled.collectAsState(initial = false).value
 
     val permissions = arrayOf(Manifest.permission.SEND_SMS)
@@ -137,12 +133,10 @@ private fun SmsEnable(
                     dataStore.setSmsEnabled(enabled)
                 }
                 if (enabled) {
-                    permissionRequestLauncher?.let { launcher ->
-                        PermissionUtil.checkPermissions(
-                            launcher,
-                            permissions
-                        )
-                    }
+                    PermissionUtil.checkPermissions(
+                        permissionRequestLauncher,
+                        permissions
+                    )
                 }
             }
         )

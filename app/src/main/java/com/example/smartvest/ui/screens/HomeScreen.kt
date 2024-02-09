@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,17 +42,12 @@ import com.example.smartvest.util.PermissionUtil
 import com.example.smartvest.util.services.BleService
 
 private const val TAG = "HomeScreen"
-private var permissionLauncher: ActivityResultLauncher<Array<String>>? = null
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,
     title: String? = null
 ) {
-    permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { PermissionUtil.checkPermissionRequestResults(it) }
-
     SmartVestTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -73,7 +67,7 @@ fun HomeScreen(
 @Composable
 private fun ConnectionStatus(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    var connected by remember { mutableStateOf(true) }
+    var connected by remember { mutableStateOf(false) }
 
     val blePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -116,10 +110,22 @@ private fun ConnectionStatus(modifier: Modifier = Modifier) {
 private fun SendFab() {
     var openSMSAlertDialog by remember { mutableStateOf(false) }
 
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        if (PermissionUtil.checkPermissionRequestResults(it))
+            openSMSAlertDialog = true
+    }
+
     val permissions = arrayOf(Manifest.permission.SEND_SMS)
 
     FloatingActionButton(
-        onClick = { openSMSAlertDialog = true },
+        onClick = {
+            PermissionUtil.checkPermissions(
+                permissionLauncher,
+                permissions
+            )
+        },
         containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
     ) {
@@ -131,12 +137,6 @@ private fun SendFab() {
             onDismiss = { openSMSAlertDialog = false },
             onConfirm = {
                 openSMSAlertDialog = false
-                permissionLauncher?.let { launcher ->
-                    PermissionUtil.checkPermissions(
-                        launcher,
-                        permissions
-                    )
-                }
 
                 /* TODO: Implement SMS sending logic */
                 Log.d("SMS Alert Dialog", "Alert Confirmed")

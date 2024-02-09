@@ -87,16 +87,17 @@ class BleService : Service() {
         )
     }
 
-    enum class Actions {
+    enum class Action {
         READ,
         WRITE,
         REFRESH,
         SET_NOTIFICATION
     }
 
-    enum class Broadcasts {
-        SCANNING,
+    enum class Status {
+        UNKNOWN,
         DEVICE_NOT_FOUND,
+        SCANNING,
         GATT_CONNECTED,
         GATT_DISCONNECTED,
         SERVICES_DISCOVERED,
@@ -153,14 +154,14 @@ class BleService : Service() {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connected to Gatt server")
                 connectionState = BluetoothProfile.STATE_CONNECTED
-                broadcast(Broadcasts.GATT_CONNECTED.name)
+                broadcast(BroadcastMsg(Status.GATT_CONNECTED))
                 /* TODO: Handle disconnects/reconnects */
 
                 bleGatt?.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "Disconnected from Gatt server")
                 connectionState = BluetoothProfile.STATE_DISCONNECTED
-                broadcast(Broadcasts.GATT_DISCONNECTED.name)
+                broadcast(BroadcastMsg(Status.GATT_DISCONNECTED))
             }
         }
 
@@ -168,13 +169,13 @@ class BleService : Service() {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Services discovered")
                 bleServices = gatt?.services
-                broadcast(Broadcasts.SERVICES_DISCOVERED.name)
+                broadcast(BroadcastMsg(Status.SERVICES_DISCOVERED))
 
                 bleUartService = bleServices?.find {
                     it.uuid == UUID.fromString(UUID_UART_SERVICE)
                 }
                 bleUartService?.let {
-                    broadcast(Broadcasts.UART_SERVICE_DISCOVERED.name)
+                    broadcast(BroadcastMsg(Status.UART_SERVICE_DISCOVERED))
                     setCharacteristicNotification(
                         it.getCharacteristic(UUID.fromString(UUID_UART_CHARACTERISTIC_TX)),
                         true
@@ -194,7 +195,7 @@ class BleService : Service() {
         ) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Read char: ${characteristic.uuid}, value: $value")
-                broadcast(Broadcasts.CHARACTERISTIC_READ.name, characteristic, value)
+                broadcast(BroadcastMsg(Status.CHARACTERISTIC_READ, characteristic, value))
             } else {
                 Log.w(TAG, "Char read failed: $status")
             }
@@ -205,7 +206,7 @@ class BleService : Service() {
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray
         ) {
-            broadcast(Broadcasts.CHARACTERISTIC_CHANGED.name, characteristic, value)
+            broadcast(BroadcastMsg(Status.CHARACTERISTIC_CHANGED, characteristic, value))
 
             /* TODO: Handle characteristic change - figure out encoding */
             if (characteristic.uuid == UUID.fromString(UUID_UART_CHARACTERISTIC_TX)) {
@@ -215,7 +216,7 @@ class BleService : Service() {
                 )
                 if (value.toString(Charsets.UTF_8) == EMERGENCY_RESPONSE_CODE) {
                     Log.d(TAG, "Received emergency response code: ${value.contentToString()}")
-                    broadcast(Broadcasts.EMERGENCY_RESPONSE.name)
+                    broadcast(BroadcastMsg(Status.EMERGENCY_RESPONSE))
                 }
             }
         }
@@ -251,14 +252,14 @@ class BleService : Service() {
 
                 if (bleDevice == null) {
                     Log.w(TAG, "BLE device not found")
-                    broadcast(Broadcasts.DEVICE_NOT_FOUND.name)
+                    broadcast(BroadcastMsg(Status.DEVICE_NOT_FOUND))
                     stopSelf()
                 }
             }, SCAN_TIMEOUT_PERIOD)  // stop scanning after timeout period
 
             scanning = true
             bleScanner.startScan(listOf(scanFilter), scanSettings, scanCallback)
-            broadcast(Broadcasts.SCANNING.name)
+            broadcast(BroadcastMsg(Status.SCANNING))
             Log.d(TAG, "Scan started")
         } else {
             scanning = false
@@ -325,18 +326,27 @@ class BleService : Service() {
         }
     }
 
-    private fun broadcast(action: String) {
-        sendBroadcast(Intent(action))
+    class BroadcastMsg(
+        status: Status = Status.UNKNOWN,
+        characteristic: BluetoothGattCharacteristic? = null,
+        msg: ByteArray? = null
+    ) {
+        var intent: Intent? = null
+        init {
+            intent = msg?.let { m ->
+                Intent(status.name)
+                    .putExtra("uuid", characteristic?.uuid)
+                    .putExtra("msg", m)
+            } ?: Intent(status.name)
+        }
+
+        constructor(intent: Intent?) : this() {
+            this.intent = intent
+        }
     }
 
-    private fun broadcast(
-        action: String,
-        characteristic: BluetoothGattCharacteristic,
-        value: ByteArray
-    ) {
-        val intent = Intent(action)
-        intent.putExtra("uuid", characteristic.uuid.toString())
-        intent.putExtra("value", value)
-        sendBroadcast(intent)
+    private fun broadcast(broadcastMsg: BroadcastMsg) {
+        if (broadcastMsg.intent != null)
+            sendBroadcast(broadcastMsg.intent)
     }
 }

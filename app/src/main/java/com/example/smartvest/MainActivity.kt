@@ -16,7 +16,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         /* TODO: Clean up ALL Log statements, add documentation */
 
-        val permissionLauncher = registerForActivityResult(
+        val blePermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
             /* TODO: Handle permission denied */
@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
         }
 
         PermissionUtil.checkPermissions(
-            permissionLauncher,
+            blePermissionLauncher,
             arrayOf(Manifest.permission.POST_NOTIFICATIONS)
         )
 
