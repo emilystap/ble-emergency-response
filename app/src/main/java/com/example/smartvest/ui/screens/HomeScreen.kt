@@ -1,4 +1,4 @@
-package com.example.smartvest.ui
+package com.example.smartvest.ui.screens
 
 import android.Manifest
 import android.content.Intent
@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.R
+import com.example.smartvest.ui.AppScreen
+import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.util.PermissionUtil
 import com.example.smartvest.util.services.BleService

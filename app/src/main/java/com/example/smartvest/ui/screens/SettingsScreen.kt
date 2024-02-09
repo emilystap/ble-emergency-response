@@ -1,4 +1,4 @@
-package com.example.smartvest.ui
+package com.example.smartvest.ui.screens
 
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.data.SettingsStore
+import com.example.smartvest.ui.AppScreen
+import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.util.PermissionUtil
 import kotlinx.coroutines.CoroutineScope
