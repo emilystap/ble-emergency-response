@@ -95,6 +95,7 @@ class BleService : Service() {
     }
 
     enum class Broadcasts {
+        SCANNING,
         DEVICE_NOT_FOUND,
         GATT_CONNECTED,
         GATT_DISCONNECTED,
@@ -257,6 +258,7 @@ class BleService : Service() {
 
             scanning = true
             bleScanner.startScan(listOf(scanFilter), scanSettings, scanCallback)
+            broadcast(Broadcasts.SCANNING.name)
             Log.d(TAG, "Scan started")
         } else {
             scanning = false
