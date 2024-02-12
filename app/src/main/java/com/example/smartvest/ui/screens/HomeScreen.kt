@@ -33,21 +33,22 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.smartvest.R
 import com.example.smartvest.ui.TopAppBar
+import com.example.smartvest.ui.states.HomeUiState
 import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.ui.viewmodels.HomeViewModel
 import com.example.smartvest.util.PermissionUtil
 import com.example.smartvest.util.services.BleService
 
 private const val TAG = "HomeScreen"
-private lateinit var viewModel: HomeViewModel
+/* TODO: Switch to Hilt for dependency injection */
 
 @Composable
 fun HomeScreen(
-    homeViewModel: HomeViewModel,
+    viewModel: HomeViewModel,
     navController: NavHostController,
     title: String? = null
 ) {
-    viewModel = homeViewModel  /* TODO: Figure out if this is valid */
+    val uiState by viewModel.uiState.collectAsState()
 
     SmartVestTheme {
         Scaffold(
@@ -58,7 +59,7 @@ fun HomeScreen(
             }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
-                ConnectionStatus()
+                ConnectionStatus(viewModel = viewModel, uiState = uiState)
             }
         }
     }
@@ -67,7 +68,9 @@ fun HomeScreen(
 /* TODO: add buttons to start tracking, refresh connection */
 @Composable
 private fun ConnectionStatus(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel,
+    uiState: HomeUiState
 ) {
     val blePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -77,8 +80,6 @@ private fun ConnectionStatus(
         else
             Log.w(TAG, "Permission check returned false")
     }
-
-    val uiState by viewModel.uiState.collectAsState()
     val connected = uiState.connected
 
     Row(modifier = Modifier.padding(24.dp)) {

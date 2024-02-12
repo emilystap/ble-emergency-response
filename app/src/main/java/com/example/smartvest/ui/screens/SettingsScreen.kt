@@ -29,21 +29,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.smartvest.ui.TopAppBar
+import com.example.smartvest.ui.states.SettingsUiState
 import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.ui.viewmodels.SettingsViewModel
 import com.example.smartvest.util.PermissionUtil
 
 private const val TAG = "SettingsScreen"
 private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<String>>
-private lateinit var viewModel: SettingsViewModel
 
 @Composable
 fun SettingsScreen(
-    settingsViewModel: SettingsViewModel,
+    viewModel: SettingsViewModel,
     navController: NavHostController,
     title: String? = null
 ) {
-    viewModel = settingsViewModel
+    val uiState by viewModel.uiState.collectAsState()
 
     permissionRequestLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -56,8 +56,8 @@ fun SettingsScreen(
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    LocationEnable()
-                    SmsEnable()
+                    LocationEnable(viewModel = viewModel, uiState = uiState)
+                    SmsEnable(viewModel = viewModel, uiState = uiState)
                 }
             }
         }
@@ -65,8 +65,11 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun LocationEnable() {
-    val uiState by viewModel.uiState.collectAsState()
+private fun LocationEnable(
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel,
+    uiState: SettingsUiState
+) {
     val enabled = uiState.locationEnabled
 
     val permissions = arrayOf(
@@ -77,7 +80,7 @@ private fun LocationEnable() {
     Row {
         Text(
             text = "Enable Location Tracking",
-            modifier = Modifier.weight(1f)
+            modifier = modifier.weight(1f)
         )
         Switch(
             checked = enabled,
@@ -96,8 +99,11 @@ private fun LocationEnable() {
 }
 
 @Composable
-private fun SmsEnable() {
-    val uiState by viewModel.uiState.collectAsState()
+private fun SmsEnable(
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel,
+    uiState: SettingsUiState
+) {
     val enabled = uiState.smsEnabled
 
     val permissions = arrayOf(Manifest.permission.SEND_SMS)
@@ -105,7 +111,7 @@ private fun SmsEnable() {
     Row {
         Text(
             text = "Enable Emergency SMS",
-            modifier = Modifier.weight(1f)
+            modifier = modifier.weight(1f)
         )
         Switch(
             checked = enabled,
@@ -123,20 +129,23 @@ private fun SmsEnable() {
     }
     if (enabled) {
         Row {
-            EditSmsNumber()
+            EditSmsNumber(viewModel = viewModel, uiState = uiState)
         }
     }
 }
 
 @Composable
-private fun EditSmsNumber() {
+private fun EditSmsNumber(
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel,
+    uiState: SettingsUiState
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
     var valid by remember { mutableStateOf(true) }
     var text by remember { mutableStateOf("") }
 
-    val uiState by viewModel.uiState.collectAsState()
     val storedSmsNumber = uiState.storedSmsNumber
 
     OutlinedTextField(
