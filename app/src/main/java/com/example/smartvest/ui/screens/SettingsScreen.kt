@@ -32,7 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.smartvest.data.SettingsStore
+import com.example.smartvest.data.SettingsRepository
 import com.example.smartvest.ui.AppScreen
 import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.theme.SmartVestTheme
@@ -67,21 +67,21 @@ fun SettingsScreen(
 @Composable
 private fun SettingsMenu() {
     val context = LocalContext.current
-    val dataStore = SettingsStore(context)  /* TODO: Move to view model */
+    val settingsRepository = SettingsRepository(context)  /* TODO: Move to view model */
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(24.dp)) {
-        LocationEnable(dataStore, scope)
-        SmsEnable(dataStore, scope)
+        LocationEnable(settingsRepository, scope)
+        SmsEnable(settingsRepository, scope)
     }
 }
 
 @Composable
 private fun LocationEnable(
-    dataStore: SettingsStore,
+    settingsRepository: SettingsRepository,
     scope: CoroutineScope
 ) {
-    var enabled = dataStore.locationEnabled.collectAsState(initial = false).value
+    var enabled = settingsRepository.locationEnabled.collectAsState(initial = false).value
 
     val permissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -98,7 +98,7 @@ private fun LocationEnable(
             onCheckedChange = {
                 enabled = it
                 scope.launch {
-                    dataStore.setLocationEnabled(enabled)
+                    settingsRepository.setLocationEnabled(enabled)
                 }
                 if (enabled) {
                     PermissionUtil.checkPermissions(
@@ -113,10 +113,10 @@ private fun LocationEnable(
 
 @Composable
 private fun SmsEnable(
-    dataStore: SettingsStore,
+    settingsRepository: SettingsRepository,
     scope: CoroutineScope
 ) {
-    var enabled = dataStore.smsEnabled.collectAsState(initial = false).value
+    var enabled = settingsRepository.smsEnabled.collectAsState(initial = false).value
 
     val permissions = arrayOf(Manifest.permission.SEND_SMS)
 
@@ -130,7 +130,7 @@ private fun SmsEnable(
             onCheckedChange = {
                 enabled = it
                 scope.launch {
-                    dataStore.setSmsEnabled(enabled)
+                    settingsRepository.setSmsEnabled(enabled)
                 }
                 if (enabled) {
                     PermissionUtil.checkPermissions(
@@ -143,20 +143,23 @@ private fun SmsEnable(
     }
     if (enabled) {
         Row {
-            EditSmsNumber(dataStore, scope)
+            EditSmsNumber(settingsRepository, scope)
         }
     }
 }
 
 @Composable
-private fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
+private fun EditSmsNumber(
+    settingsRepository: SettingsRepository,
+    scope: CoroutineScope
+) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
     var valid by remember { mutableStateOf(true) }
     var text by remember { mutableStateOf("") }
 
-    val storedSmsNumber = dataStore.storedSmsNumber.collectAsState(initial = "").value
+    val storedSmsNumber = settingsRepository.storedSmsNumber.collectAsState(initial = "").value
 
     OutlinedTextField(
         value = text,
@@ -199,7 +202,7 @@ private fun EditSmsNumber(dataStore: SettingsStore, scope: CoroutineScope) {
                     focusManager.clearFocus()
 
                     scope.launch {
-                        dataStore.setStoredSmsNumber(text)
+                        settingsRepository.setStoredSmsNumber(text)
                     }
                 }
                 else {
