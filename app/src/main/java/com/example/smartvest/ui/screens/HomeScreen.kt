@@ -1,8 +1,6 @@
 package com.example.smartvest.ui.screens
 
 import android.Manifest
-import android.app.Application
-import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,19 +22,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.smartvest.R
-import com.example.smartvest.ui.AppScreen
 import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.ui.viewmodels.HomeViewModel
@@ -48,10 +43,11 @@ private lateinit var viewModel: HomeViewModel
 
 @Composable
 fun HomeScreen(
+    homeViewModel: HomeViewModel,
     navController: NavHostController,
     title: String? = null
 ) {
-    viewModel = HomeViewModel(LocalContext.current as Application)  /* TODO: Figure out if this is valid */
+    viewModel = homeViewModel  /* TODO: Figure out if this is valid */
 
     SmartVestTheme {
         Scaffold(
@@ -70,9 +66,9 @@ fun HomeScreen(
 
 /* TODO: add buttons to start tracking, refresh connection */
 @Composable
-private fun ConnectionStatus(modifier: Modifier = Modifier) {
-    val connected = viewModel.uiState.value.connected
-
+private fun ConnectionStatus(
+    modifier: Modifier = Modifier
+) {
     val blePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) {
@@ -81,6 +77,9 @@ private fun ConnectionStatus(modifier: Modifier = Modifier) {
         else
             Log.w(TAG, "Permission check returned false")
     }
+
+    val uiState by viewModel.uiState.collectAsState()
+    val connected = uiState.connected
 
     Row(modifier = Modifier.padding(24.dp)) {
         Text(
@@ -170,14 +169,5 @@ private fun SMSAlertDialog(
                 Text("Dismiss")
             }
         }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomePreview() {
-    HomeScreen(
-        navController = rememberNavController(),
-        title = AppScreen.Home.route
     )
 }

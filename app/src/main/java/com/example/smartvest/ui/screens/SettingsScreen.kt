@@ -1,7 +1,6 @@
 package com.example.smartvest.ui.screens
 
 import android.Manifest
-import android.app.Application
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,26 +20,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.smartvest.data.SettingsRepository
-import com.example.smartvest.ui.AppScreen
 import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.ui.viewmodels.SettingsViewModel
 import com.example.smartvest.util.PermissionUtil
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 private const val TAG = "SettingsScreen"
 private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<String>>
@@ -48,10 +39,11 @@ private lateinit var viewModel: SettingsViewModel
 
 @Composable
 fun SettingsScreen(
+    settingsViewModel: SettingsViewModel,
     navController: NavHostController,
     title: String? = null
 ) {
-    viewModel = SettingsViewModel(LocalContext.current as Application)
+    viewModel = settingsViewModel
 
     permissionRequestLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -63,30 +55,19 @@ fun SettingsScreen(
             topBar = { TopAppBar(navController, title) }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
-                SettingsMenu()
+                Column(modifier = Modifier.padding(24.dp)) {
+                    LocationEnable()
+                    SmsEnable()
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SettingsMenu() {
-    val context = LocalContext.current
-    val settingsRepository = SettingsRepository(context)  /* TODO: Move to view model */
-    val scope = rememberCoroutineScope()
-
-    Column(modifier = Modifier.padding(24.dp)) {
-        LocationEnable(settingsRepository, scope)
-        SmsEnable(settingsRepository, scope)
-    }
-}
-
-@Composable
-private fun LocationEnable(
-    settingsRepository: SettingsRepository,
-    scope: CoroutineScope
-) {
-    var enabled = settingsRepository.locationEnabled.collectAsState(initial = false).value
+private fun LocationEnable() {
+    val uiState by viewModel.uiState.collectAsState()
+    val enabled = uiState.locationEnabled
 
     val permissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -101,11 +82,9 @@ private fun LocationEnable(
         Switch(
             checked = enabled,
             onCheckedChange = {
-                enabled = it
-                scope.launch {
-                    settingsRepository.setLocationEnabled(enabled)
-                }
-                if (enabled) {
+                viewModel.setLocationEnabled(it)
+
+                if (enabled) {  /* TODO: move this to view model? */
                     PermissionUtil.checkPermissions(
                         permissionRequestLauncher,
                         permissions
@@ -117,11 +96,9 @@ private fun LocationEnable(
 }
 
 @Composable
-private fun SmsEnable(
-    settingsRepository: SettingsRepository,
-    scope: CoroutineScope
-) {
-    var enabled = settingsRepository.smsEnabled.collectAsState(initial = false).value
+private fun SmsEnable() {
+    val uiState by viewModel.uiState.collectAsState()
+    val enabled = uiState.smsEnabled
 
     val permissions = arrayOf(Manifest.permission.SEND_SMS)
 
@@ -133,10 +110,8 @@ private fun SmsEnable(
         Switch(
             checked = enabled,
             onCheckedChange = {
-                enabled = it
-                scope.launch {
-                    settingsRepository.setSmsEnabled(enabled)
-                }
+                viewModel.setSmsEnabled(it)
+
                 if (enabled) {
                     PermissionUtil.checkPermissions(
                         permissionRequestLauncher,
@@ -148,23 +123,21 @@ private fun SmsEnable(
     }
     if (enabled) {
         Row {
-            EditSmsNumber(settingsRepository, scope)
+            EditSmsNumber()
         }
     }
 }
 
 @Composable
-private fun EditSmsNumber(
-    settingsRepository: SettingsRepository,
-    scope: CoroutineScope
-) {
+private fun EditSmsNumber() {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
     var valid by remember { mutableStateOf(true) }
     var text by remember { mutableStateOf("") }
 
-    val storedSmsNumber = settingsRepository.storedSmsNumber.collectAsState(initial = "").value
+    val uiState by viewModel.uiState.collectAsState()
+    val storedSmsNumber = uiState.storedSmsNumber
 
     OutlinedTextField(
         value = text,
@@ -206,23 +179,12 @@ private fun EditSmsNumber(
                     keyboardController?.hide()
                     focusManager.clearFocus()
 
-                    scope.launch {
-                        settingsRepository.setStoredSmsNumber(text)
-                    }
+                    viewModel.setStoredSmsNumber(text)
                 }
                 else {
                     valid = false
                 }
             }
         )
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SettingsPreview() {
-    SettingsScreen(
-        navController = rememberNavController(),
-        title = AppScreen.Settings.route
     )
 }
