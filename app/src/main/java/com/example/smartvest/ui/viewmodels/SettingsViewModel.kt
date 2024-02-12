@@ -1,5 +1,6 @@
 package com.example.smartvest.ui.viewmodels
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 
-class SettingsViewModel : ViewModel()
+class SettingsViewModel(application: Application) : AndroidViewModel(application)

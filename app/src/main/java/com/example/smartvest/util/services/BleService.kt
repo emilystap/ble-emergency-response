@@ -29,7 +29,6 @@ import com.example.smartvest.R
 import com.example.smartvest.util.PermissionUtil
 import java.util.UUID
 
-
 private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
 private const val DEVICE_NAME = "RN4870-DF62"
@@ -40,8 +39,6 @@ private const val UUID_UART_CHARACTERISTIC_TX = "49535343-1E4D-4BD9-BA61-23C6472
 private const val UUID_UART_CHARACTERISTIC_CTL = "49535343-4C8A-39B3-2F49-511CFF073B7E"
 private const val UUID_CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb"
 private const val EMERGENCY_RESPONSE_CODE = "SOS"
-
-/* TODO: Switch to Foreground Service, Type: Connected Device */
 
 @SuppressLint("MissingPermission")
 class BleService : Service() {
@@ -77,6 +74,7 @@ class BleService : Service() {
         const val SERVICE_ID = 1
         const val NOTIFICATION_CHANNEL_ID = "services.BleService"
         const val NOTIFICATION_CHANNEL_NAME = "BleService"
+        const val PKG_CLASS_NAME = "com.example.smartvest.service.BleService"
 
         val permissions = arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
@@ -85,13 +83,6 @@ class BleService : Service() {
             Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.BLUETOOTH_ADVERTISE
         )
-    }
-
-    enum class Action {
-        READ,
-        WRITE,
-        REFRESH,
-        SET_NOTIFICATION
     }
 
     enum class Status {
@@ -129,7 +120,7 @@ class BleService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        return null
+        return null  // don't allow binding
     }
 
     override fun onDestroy() {
@@ -194,7 +185,7 @@ class BleService : Service() {
         ) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Read char: ${characteristic.uuid}, value: $value")
-                broadcast(Status.CHARACTERISTIC_READ, characteristic, value)
+                broadcast(Status.CHARACTERISTIC_READ)
             } else {
                 Log.w(TAG, "Char read failed: $status")
             }
@@ -322,13 +313,13 @@ class BleService : Service() {
     private fun broadcast(
         status: Status,
         characteristic: BluetoothGattCharacteristic? = null,
-        msg: ByteArray? = null
+        value: ByteArray? = null
     ) {
-        val intent = Intent(status.name)
-        msg?.let { m ->
-                intent.putExtra("uuid", characteristic?.uuid)
-                intent.putExtra("msg", m)
-        }
+        val intent = Intent(PKG_CLASS_NAME)
+        intent.putExtra("status", status)
+
+        characteristic?.let { intent.putExtra("uuid", it.uuid.toString()) }
+        value?.let { intent.putExtra("value", it) }
 
         sendBroadcast(intent)
     }
