@@ -1,6 +1,7 @@
 package com.example.smartvest.ui.screens
 
 import android.Manifest
+import android.app.Application
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,18 +37,22 @@ import com.example.smartvest.data.SettingsRepository
 import com.example.smartvest.ui.AppScreen
 import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.theme.SmartVestTheme
+import com.example.smartvest.ui.viewmodels.SettingsViewModel
 import com.example.smartvest.util.PermissionUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 private const val TAG = "SettingsScreen"
 private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<String>>
+private lateinit var viewModel: SettingsViewModel
 
 @Composable
 fun SettingsScreen(
     navController: NavHostController,
     title: String? = null
 ) {
+    viewModel = SettingsViewModel(LocalContext.current as Application)
+
     permissionRequestLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { PermissionUtil.checkPermissionRequestResults(it) }

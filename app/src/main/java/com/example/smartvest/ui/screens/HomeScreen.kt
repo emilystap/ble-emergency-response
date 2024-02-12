@@ -1,6 +1,7 @@
 package com.example.smartvest.ui.screens
 
 import android.Manifest
+import android.app.Application
 import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -38,16 +39,20 @@ import com.example.smartvest.R
 import com.example.smartvest.ui.AppScreen
 import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.theme.SmartVestTheme
+import com.example.smartvest.ui.viewmodels.HomeViewModel
 import com.example.smartvest.util.PermissionUtil
 import com.example.smartvest.util.services.BleService
 
 private const val TAG = "HomeScreen"
+private lateinit var viewModel: HomeViewModel
 
 @Composable
 fun HomeScreen(
     navController: NavHostController,
     title: String? = null
 ) {
+    viewModel = HomeViewModel(LocalContext.current as Application)  /* TODO: Figure out if this is valid */
+
     SmartVestTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -66,14 +71,13 @@ fun HomeScreen(
 /* TODO: add buttons to start tracking, refresh connection */
 @Composable
 private fun ConnectionStatus(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    var connected by remember { mutableStateOf(false) }
+    val connected = viewModel.uiState.value.connected
 
     val blePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) {
         if (PermissionUtil.checkPermissionRequestResults(it))
-            context.startService(Intent(context, BleService::class.java))  /* TODO: Figure out a cleaner way of doing this */
+            viewModel.refreshBleService()
         else
             Log.w(TAG, "Permission check returned false")
     }
@@ -92,9 +96,6 @@ private fun ConnectionStatus(modifier: Modifier = Modifier) {
         )
         FilledTonalButton(
             onClick = {
-                /* TODO: Implement BT connection */
-                connected = !connected
-
                 PermissionUtil.checkPermissions(
                     blePermissionLauncher,
                     BleService.permissions
