@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.states.SettingsUiState
@@ -39,7 +40,7 @@ private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<Str
 
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel,
+    viewModel: SettingsViewModel = viewModel(),
     navController: NavHostController,
     title: String? = null
 ) {

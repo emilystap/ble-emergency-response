@@ -4,14 +4,18 @@ import android.content.Context
 import android.content.IntentFilter
 import com.example.smartvest.util.receivers.BleStatusReceiver
 import com.example.smartvest.util.services.BleService
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 object BleStatusRepository {
     private val receiver = BleStatusReceiver()
     private val intentFilter = IntentFilter(BleService.PKG_CLASS_NAME)
 
-    fun getStatus(): MutableStateFlow<BleService.Status> {
+    fun getStatus(): StateFlow<BleService.Status> {
         return receiver.getStatus()
+    }
+
+    fun gattConnected(): StateFlow<Boolean> {
+        return receiver.gattConnected()
     }
 
     fun registerReceiver(context: Context) {

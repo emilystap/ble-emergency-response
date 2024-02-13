@@ -16,7 +16,7 @@ sealed class AppScreen(val route: String) {
 fun AppNav() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = AppScreen.Home.route) {
-        composable(AppScreen.Home.route) { HomeScreen(navController) }
-        composable(AppScreen.Settings.route) { SettingsScreen(navController) }
+        composable(AppScreen.Home.route) { HomeScreen(navController = navController) }
+        composable(AppScreen.Settings.route) { SettingsScreen(navController = navController) }
     }
 }

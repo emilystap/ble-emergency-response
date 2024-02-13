@@ -11,13 +11,24 @@ class BleStatusReceiver : BroadcastReceiver() {
         BleService.Status.UNKNOWN
     )
 
+    private val gattConnected: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.getStringExtra("status")?.let {
             status.value = BleService.Status.valueOf(it)
+
+            if (status.value == BleService.Status.GATT_CONNECTED)
+                gattConnected.value = true
+            else if (status.value == BleService.Status.GATT_DISCONNECTED)
+                gattConnected.value = false
         }
     }
 
     fun getStatus(): MutableStateFlow<BleService.Status> {
         return status
+    }
+
+    fun gattConnected(): MutableStateFlow<Boolean> {
+        return gattConnected
     }
 }
