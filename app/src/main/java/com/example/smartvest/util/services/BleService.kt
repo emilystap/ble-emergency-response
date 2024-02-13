@@ -98,6 +98,10 @@ class BleService : Service() {
         EMERGENCY_RESPONSE
     }
 
+    override fun onBind(intent: Intent?): IBinder? {
+        return null  // don't allow binding
+    }
+
     override fun onCreate() {
         bluetoothManager = this.getSystemService(BLUETOOTH_SERVICE)
                 as BluetoothManager
@@ -117,10 +121,6 @@ class BleService : Service() {
 
         // Restart service if interrupted
         return START_STICKY
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null  // don't allow binding
     }
 
     override fun onDestroy() {

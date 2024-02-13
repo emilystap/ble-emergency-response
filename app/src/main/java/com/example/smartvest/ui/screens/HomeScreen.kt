@@ -56,7 +56,7 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             topBar = { TopAppBar(navController, title, canReturn = false) },
             floatingActionButton = {
-                SendFab()  // floating action button for manually sending SMS
+                SendFab(viewModel = viewModel)  // floating action button for manually sending SMS
             }
         ) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
@@ -109,7 +109,7 @@ private fun ConnectionStatus(
 }
 
 @Composable
-private fun SendFab() {
+private fun SendFab(viewModel: HomeViewModel) {
     var openSMSAlertDialog by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -139,9 +139,7 @@ private fun SendFab() {
             onDismiss = { openSMSAlertDialog = false },
             onConfirm = {
                 openSMSAlertDialog = false
-
-                /* TODO: Implement SMS sending logic */
-                Log.d("SMS Alert Dialog", "Alert Confirmed")
+                viewModel.startSmsService()
             }
         )
     }

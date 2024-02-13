@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.smartvest.data.BleStatusRepository
 import com.example.smartvest.ui.states.HomeUiState
 import com.example.smartvest.util.services.BleService
+import com.example.smartvest.util.services.SmsService
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -30,6 +31,10 @@ class HomeViewModel(private val application: Application) : AndroidViewModel(app
 
     fun refreshBleService() {
         application.startService(Intent(application, BleService::class.java))
+    }
+
+    fun startSmsService() {
+        application.startService(Intent(application, SmsService::class.java))
     }
 
     init {
