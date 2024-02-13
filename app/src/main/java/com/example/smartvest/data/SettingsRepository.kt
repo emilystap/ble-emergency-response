@@ -41,7 +41,7 @@ class SettingsRepository private constructor(
                 INSTANCE?.let {
                     return it
                 }
-
+                Log.d(TAG, "getInstance: creating new instance")
                 val instance = SettingsRepository(
                     context.applicationContext,
                     scope

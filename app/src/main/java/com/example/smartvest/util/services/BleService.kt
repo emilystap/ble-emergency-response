@@ -213,7 +213,6 @@ class BleService : Service() {
         if (!PermissionUtil.checkPermissionsBackground(this, permissions)) {
             Log.w(TAG, "Missing required permissions, stopping service")
             stopSelf()
-            return
         }
 
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)

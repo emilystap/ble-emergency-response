@@ -33,7 +33,9 @@ import com.example.smartvest.ui.TopAppBar
 import com.example.smartvest.ui.states.SettingsUiState
 import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.ui.viewmodels.SettingsViewModel
+import com.example.smartvest.util.LocationUtil
 import com.example.smartvest.util.PermissionUtil
+import com.example.smartvest.util.services.SmsService
 
 private const val TAG = "SettingsScreen"
 private lateinit var permissionRequestLauncher: ActivityResultLauncher<Array<String>>
@@ -73,11 +75,6 @@ private fun LocationEnable(
 ) {
     val enabled = uiState.locationEnabled
 
-    val permissions = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    )
-
     Row {
         Text(
             text = "Enable Location Tracking",
@@ -91,7 +88,7 @@ private fun LocationEnable(
                 if (enabled) {  /* TODO: move this to view model? */
                     PermissionUtil.checkPermissions(
                         permissionRequestLauncher,
-                        permissions
+                        LocationUtil.permissions
                     )
                 }
             }
@@ -107,8 +104,6 @@ private fun SmsEnable(
 ) {
     val enabled = uiState.smsEnabled
 
-    val permissions = arrayOf(Manifest.permission.SEND_SMS)
-
     Row {
         Text(
             text = "Enable Emergency SMS",
@@ -122,7 +117,7 @@ private fun SmsEnable(
                 if (enabled) {
                     PermissionUtil.checkPermissions(
                         permissionRequestLauncher,
-                        permissions
+                        SmsService.permissions
                     )
                 }
             }
