@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
-    private val settingsRepository: SettingsRepository = SettingsRepository(application)
+    private val settingsRepository: SettingsRepository = SettingsRepository
+        .getInstance(application)
 
     val uiState = combine(
             settingsRepository.locationEnabled,

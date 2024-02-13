@@ -15,16 +15,33 @@ import kotlinx.coroutines.flow.map
 import java.io.IOException
 
 private const val TAG = "SettingsStore"
+private val SMS_ENABLED = booleanPreferencesKey("sms_enabled")
+private val LOCATION_ENABLED = booleanPreferencesKey("location_enabled")
+private val STORED_SMS_NUMBER = stringPreferencesKey("stored_sms_number")
 
-class SettingsRepository(
-    private val context: Context
-) {
-    private companion object {
-        val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+class SettingsRepository private constructor(context: Context) {
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+        name = "settings"
+    )
 
-        val SMS_ENABLED = booleanPreferencesKey("sms_enabled")
-        val LOCATION_ENABLED = booleanPreferencesKey("location_enabled")
-        val STORED_SMS_NUMBER = stringPreferencesKey("stored_sms_number")
+    companion object {
+        @Volatile
+        private var INSTANCE: SettingsRepository? = null
+
+        fun getInstance(context: Context): SettingsRepository {
+            // allow only one instance across all threads
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE?.let {
+                    return it
+                }
+
+                val instance = SettingsRepository(context)
+                INSTANCE = instance
+
+                // return instance if created during call, otherwise INSTANCE
+                instance
+            }
+        }
     }
 
     suspend fun setSmsEnabled(smsEnabled: Boolean) {

@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel(private val application: Application) : AndroidViewModel(application) {
-    val uiState = BleStatusRepository.gattConnected().map { gattConnected ->
+    private val bleStatusRepository = BleStatusRepository.getInstance()
+    val uiState = bleStatusRepository.gattConnected().map { gattConnected ->
         HomeUiState(
             connected = gattConnected
         )
@@ -24,7 +25,7 @@ class HomeViewModel(private val application: Application) : AndroidViewModel(app
 
     override fun onCleared() {
         super.onCleared()
-        BleStatusRepository.unregisterReceiver(application)
+        bleStatusRepository.unregisterReceiver(application)
     }
 
     fun refreshBleService() {
@@ -32,6 +33,6 @@ class HomeViewModel(private val application: Application) : AndroidViewModel(app
     }
 
     init {
-        BleStatusRepository.registerReceiver(application)
+        bleStatusRepository.registerReceiver(application)
     }
 }
