@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     private val settingsRepository: SettingsRepository = SettingsRepository
-        .getInstance(application)
+        .getInstance(application, viewModelScope)
 
     val uiState = combine(
             settingsRepository.locationEnabled,
@@ -26,7 +26,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),  /* TODO: Figure this param out */
+        started = SharingStarted.WhileSubscribed(5000),
         initialValue = SettingsUiState(
             locationEnabled = false,
             smsEnabled = false,

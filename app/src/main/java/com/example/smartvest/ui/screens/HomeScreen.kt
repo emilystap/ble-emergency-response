@@ -39,6 +39,7 @@ import com.example.smartvest.ui.theme.SmartVestTheme
 import com.example.smartvest.ui.viewmodels.HomeViewModel
 import com.example.smartvest.util.PermissionUtil
 import com.example.smartvest.util.services.BleService
+import com.example.smartvest.util.services.SmsService
 
 private const val TAG = "HomeScreen"
 /* TODO: Switch to Hilt for dependency injection */
@@ -119,13 +120,11 @@ private fun SendFab(viewModel: HomeViewModel) {
             openSMSAlertDialog = true
     }
 
-    val permissions = arrayOf(Manifest.permission.SEND_SMS)
-
     FloatingActionButton(
         onClick = {
             PermissionUtil.checkPermissions(
                 permissionLauncher,
-                permissions
+                SmsService.permissions
             )
         },
         containerColor = BottomAppBarDefaults.bottomAppBarFabColor,

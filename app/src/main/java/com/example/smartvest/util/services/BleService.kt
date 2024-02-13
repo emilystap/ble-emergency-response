@@ -42,14 +42,6 @@ private const val EMERGENCY_RESPONSE_CODE = "SOS"
 
 @SuppressLint("MissingPermission")
 class BleService : Service() {
-    private val permissions = arrayOf(
-        Manifest.permission.POST_NOTIFICATIONS,
-        Manifest.permission.BLUETOOTH_ADMIN,
-        Manifest.permission.BLUETOOTH_SCAN,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.BLUETOOTH_ADVERTISE
-    )
-
     private var scanning: Boolean = false
     private var serviceLooper: Looper? = null
     private var serviceHandler: Handler? = null
@@ -103,6 +95,8 @@ class BleService : Service() {
     }
 
     override fun onCreate() {
+        super.onCreate()
+
         bluetoothManager = this.getSystemService(BLUETOOTH_SERVICE)
                 as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
@@ -119,11 +113,12 @@ class BleService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         start()
 
-        // Restart service if interrupted
-        return START_STICKY
+        return START_STICKY  // Restart service if interrupted
     }
 
     override fun onDestroy() {
+        super.onDestroy()
+
         Log.d(TAG, "Stopping service")
         close()  // end GATT connection
     }
