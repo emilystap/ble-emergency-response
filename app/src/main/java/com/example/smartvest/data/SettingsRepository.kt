@@ -19,7 +19,7 @@ private val SMS_ENABLED = booleanPreferencesKey("sms_enabled")
 private val LOCATION_ENABLED = booleanPreferencesKey("location_enabled")
 private val STORED_SMS_NUMBER = stringPreferencesKey("stored_sms_number")
 
-class SettingsRepository private constructor(context: Context) {
+class SettingsRepository(private val context: Context) {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
         name = "settings"
     )
@@ -35,7 +35,9 @@ class SettingsRepository private constructor(context: Context) {
                     return it
                 }
 
-                val instance = SettingsRepository(context)
+                // context.applicationContext *should* prevent memory leaks
+                /* TODO: Check for memory leaks */
+                val instance = SettingsRepository(context.applicationContext)
                 INSTANCE = instance
 
                 // return instance if created during call, otherwise INSTANCE
