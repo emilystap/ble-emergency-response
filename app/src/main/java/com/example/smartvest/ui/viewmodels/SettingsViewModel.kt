@@ -35,14 +35,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
 
     fun setLocationEnabled(enable: Boolean) {
-        viewModelScope.launch { settingsRepository.setLocationEnabled(enable) }
+        viewModelScope.launch {
+            settingsRepository.setLocationEnabled(enable, getApplication())
+        }
     }
 
     fun setSmsEnabled(enable: Boolean) {
-        viewModelScope.launch { settingsRepository.setSmsEnabled(enable) }
+        viewModelScope.launch {
+            settingsRepository.setSmsEnabled(enable, getApplication())
+        }
     }
 
     fun setStoredSmsNumber(number: String) {
-        viewModelScope.launch { settingsRepository.setStoredSmsNumber(number) }
+        viewModelScope.launch {
+            settingsRepository.setStoredSmsNumber(number, getApplication())
+        }
     }
 }

@@ -19,7 +19,7 @@ private val SMS_ENABLED = booleanPreferencesKey("sms_enabled")
 private val LOCATION_ENABLED = booleanPreferencesKey("location_enabled")
 private val STORED_SMS_NUMBER = stringPreferencesKey("stored_sms_number")
 
-class SettingsRepository(private val context: Context) {
+class SettingsRepository(context: Context) {
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
         name = "settings"
     )
@@ -35,8 +35,6 @@ class SettingsRepository(private val context: Context) {
                     return it
                 }
 
-                // context.applicationContext *should* prevent memory leaks
-                /* TODO: Check for memory leaks */
                 val instance = SettingsRepository(context.applicationContext)
                 INSTANCE = instance
 
@@ -46,19 +44,19 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
-    suspend fun setSmsEnabled(smsEnabled: Boolean) {
+    suspend fun setSmsEnabled(smsEnabled: Boolean, context: Context) {
         context.dataStore.edit { preferences ->
             preferences[SMS_ENABLED] = smsEnabled
         }
     }
 
-    suspend fun setLocationEnabled(locationEnabled: Boolean) {
+    suspend fun setLocationEnabled(locationEnabled: Boolean, context: Context) {
         context.dataStore.edit { preferences ->
             preferences[LOCATION_ENABLED] = locationEnabled
         }
     }
 
-    suspend fun setStoredSmsNumber(storedSmsNumber: String) {
+    suspend fun setStoredSmsNumber(storedSmsNumber: String, context: Context) {
         context.dataStore.edit { preferences ->
             preferences[STORED_SMS_NUMBER] = storedSmsNumber
         }
