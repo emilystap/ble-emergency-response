@@ -6,17 +6,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import java.io.IOException
 
 private const val TAG = "SettingsStore"
 private val SMS_ENABLED = booleanPreferencesKey("sms_enabled")
@@ -72,27 +66,15 @@ class SettingsRepository private constructor(
         }
     }
 
-    val smsEnabled: StateFlow<Boolean> = context.dataStore.data.map { preferences ->
+    val smsEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
             preferences[SMS_ENABLED] ?: false  // assume setting is disabled
-        }.stateIn(
-            scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
-        )
+        }
 
-    val locationEnabled: StateFlow<Boolean> = context.dataStore.data.map { preferences ->
+    val locationEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
             preferences[LOCATION_ENABLED] ?: false  // assume setting is disabled
-        }.stateIn(
-            scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = false
-        )
+        }
 
-    val storedSmsNumber: StateFlow<String> = context.dataStore.data.map { preferences ->
+    val storedSmsNumber: Flow<String> = context.dataStore.data.map { preferences ->
             preferences[STORED_SMS_NUMBER] ?: ""
-        }.stateIn(
-            scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = ""
-        )
+        }
 }

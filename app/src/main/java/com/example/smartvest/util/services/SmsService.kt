@@ -13,6 +13,8 @@ import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 private const val TAG = "SmsService"
 
@@ -42,17 +44,20 @@ class SmsService : Service() {
         settingsRepository = SettingsRepository.getInstance(this, scope)
         /* TODO: Figure out why this doesn't work - SupervisorJob? */
 
-        smsEnabled = settingsRepository.smsEnabled.value
+        runBlocking(Dispatchers.IO) {  /* TODO: Find non-blocking way to do this? */
+            smsEnabled = settingsRepository.smsEnabled.first()
+            locationEnabled = settingsRepository.locationEnabled.first()
+            number = settingsRepository.storedSmsNumber.first()
+        }
+
         if (!smsEnabled) {
             Log.w(TAG, "SMS is disabled")
             stopSelf()  // stop service if SMS is disabled
         }
 
-        locationEnabled = settingsRepository.locationEnabled.value
         if (locationEnabled)
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        number = settingsRepository.storedSmsNumber.value
         smsManager = this.getSystemService(SmsManager::class.java) as SmsManager
     }
 
