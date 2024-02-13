@@ -6,7 +6,7 @@ import com.example.smartvest.util.receivers.BleStatusReceiver
 import com.example.smartvest.util.services.BleService
 import kotlinx.coroutines.flow.StateFlow
 
-class BleStatusRepository {
+class BleStatusRepository private constructor() {
     private val receiver = BleStatusReceiver()
     private val intentFilter = IntentFilter(BleService.PKG_CLASS_NAME)
 
