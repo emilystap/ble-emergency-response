@@ -19,6 +19,8 @@ import kotlinx.coroutines.runBlocking
 private const val TAG = "SmsService"
 
 class SmsService : Service() {
+    /* TODO: Move to IntentService / Background Service? (separate thread) */
+    /* TODO: Add timer notification/pop-up on BLE trigger */
     private lateinit var smsManager: SmsManager
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -42,9 +44,7 @@ class SmsService : Service() {
         super.onCreate()
 
         settingsRepository = SettingsRepository.getInstance(this, scope)
-        /* TODO: Figure out why this doesn't work - SupervisorJob? */
-
-        runBlocking(Dispatchers.IO) {  /* TODO: Find non-blocking way to do this? */
+        runBlocking(Dispatchers.IO) {  // blocking, since can't continue without this
             smsEnabled = settingsRepository.smsEnabled.first()
             locationEnabled = settingsRepository.locationEnabled.first()
             number = settingsRepository.storedSmsNumber.first()
@@ -63,7 +63,7 @@ class SmsService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "Starting service")
-        sendSms()
+        getSms()  // generates and sends SMS msg
 
         return START_REDELIVER_INTENT  // restart with previous intent if interrupted
     }
@@ -75,28 +75,32 @@ class SmsService : Service() {
         job.cancel()  // cancel coroutines
     }
 
-    private fun sendSms() {
-        Log.d(TAG, "Sending SMS")
-        var msg = "This is an automated message. "  /* TODO: update msg, add username? */
+    private fun getSms() {
+        var msg = "This is an automated message."  /* TODO: update msg, add username? */
 
         if (locationEnabled) {
-            LocationUtil.getMapUrlAwait(
+            LocationUtil.getLocation(
                 fusedLocationClient = fusedLocationClient,
-                scope = scope
-            )?.let {
-                msg += it
-            }
+                onSuccess = {
+                    msg += " Location: ${LocationUtil.getMapUrl(it)}"
+                    sendSms(msg)
+                }
+            )
+        } else {
+            sendSms(msg)
         }
+    }
+
+    private fun sendSms(msg: String = "") {
         Log.d(TAG, "Recipient: $number, Message: $msg")
 
-//        smsManager.sendTextMessage(
-//            number,
-//            null,
-//            msg,
-//            null,
-//            null
-//        )
-
-        stopSelf()
+        smsManager.sendTextMessage(
+            number,
+            null,
+            msg,
+            null,
+            null
+        )
+        stopSelf()  // stop service after sending SMS
     }
 }
