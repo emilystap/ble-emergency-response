@@ -199,7 +199,7 @@ class BleService : Service() {
                     TAG,
                     "Char change: ${characteristic.uuid}, value: ${value.contentToString()}"
                 )
-                if (value.toString(Charsets.UTF_8) == EMERGENCY_RESPONSE_CODE) {
+                if (value.contentToString() == EMERGENCY_RESPONSE_CODE) {
                     Log.d(TAG, "Received emergency response code: ${value.contentToString()}")
                     startService(Intent(this@BleService, SmsService::class.java))
                     broadcast(Status.EMERGENCY_RESPONSE)
