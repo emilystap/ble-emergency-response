@@ -110,7 +110,7 @@ class BleService : Service() {
         }
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         start()
 
         return START_STICKY  // Restart service if interrupted
@@ -127,7 +127,7 @@ class BleService : Service() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
 
-            if (result.isConnectable && result.device.name != null) {  /* TODO: figure out why so many disconnects are happening */
+            if (result.isConnectable && result.device.name != null) {
                 Log.d(TAG, "Found device: ${result.device.name}")
                 bleDevice = result.device
                 connect()
@@ -150,9 +150,6 @@ class BleService : Service() {
                     Log.d(TAG, "Disconnected from Gatt server")
                     connectionState = BluetoothProfile.STATE_DISCONNECTED
                     broadcast(Status.GATT_DISCONNECTED)
-                }
-                else -> {
-                    Log.w(TAG, "Gatt server connection state: $newState")
                 }
             }
         }
@@ -228,10 +225,11 @@ class BleService : Service() {
             .setSmallIcon(R.drawable.ic_launcher_foreground).build()
         startForeground(SERVICE_ID, notification)
 
-        if (bleDevice == null)
+        if (bleDevice == null) {
             scan()
-        else
+        } else {
             connect()
+        }
     }
 
     private fun scan() {
@@ -265,9 +263,6 @@ class BleService : Service() {
                 true,
                 gattCallback
             )
-        } ?: run {
-            Log.w(TAG, "BLE device not initialized. Rescanning")
-            scan()  /* TODO: Check for redundant scans */
         }
     }
 

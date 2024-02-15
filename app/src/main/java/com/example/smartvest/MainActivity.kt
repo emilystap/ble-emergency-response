@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         ) {
             /* TODO: Handle permission denied */
             if (PermissionUtil.checkPermissionRequestResults(it))
-                startService(Intent(this, BleService::class.java))
+                startForegroundService(Intent(this, BleService::class.java))
         }
 
         PermissionUtil.checkPermissions(
