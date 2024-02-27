@@ -17,7 +17,8 @@ private const val TIMEOUT: Long = 10000
 object LocationUtil {
     val permissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_BACKGROUND_LOCATION
     )
 
     enum class MapType(val value: String) {

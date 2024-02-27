@@ -34,7 +34,7 @@ import java.util.UUID
 private const val TAG = "BleService"
 private const val DEVICE_ADDRESS = "FC:0F:E7:BF:DF:62"
 private const val DEVICE_NAME = "RN4870-DF62"
-private const val SCAN_TIMEOUT_PERIOD: Long = 10000  // 10 seconds
+private const val SCAN_TIMEOUT_PERIOD: Long = 60000  // 60 seconds
 private const val UUID_UART_SERVICE = "49535343-FE7D-4AE5-8FA9-9FAFD205E455"
 private const val UUID_UART_CHARACTERISTIC_RX = "49535343-8841-43F4-A8D4-ECBE34729BB3"
 private const val UUID_UART_CHARACTERISTIC_TX = "49535343-1E4D-4BD9-BA61-23C647249616"
@@ -134,6 +134,8 @@ class BleService : Service() {
             if (result.isConnectable && result.device.name != null) {
                 Log.d(TAG, "Found device: ${result.device.name}")
                 bleDevice = result.device
+
+                stopScan()
                 connect()
             }
         }
@@ -209,7 +211,9 @@ class BleService : Service() {
                     TAG,
                     "Received emergency response code: ${value.toString(Charsets.UTF_8)}"
                 )
-                startService(Intent(this@BleService, SmsService::class.java))
+                startForegroundService(
+                    Intent(this@BleService, SmsService::class.java)
+                )
                 broadcast(Status.EMERGENCY_RESPONSE)
             }
         }
@@ -251,9 +255,7 @@ class BleService : Service() {
     private fun scan() {
         if (!scanning) {
             serviceHandler?.postDelayed({
-                scanning = false
-                bleScanner.stopScan(scanCallback)
-                Log.d(TAG, "Scan stopped")
+                stopScan()
 
                 if (bleDevice == null) {
                     Log.w(TAG, "BLE device not found")
@@ -270,6 +272,16 @@ class BleService : Service() {
             scanning = false
             bleScanner.stopScan(scanCallback)
         }
+    }
+
+    private fun stopScan() {
+        if (!scanning) {
+            return
+        }
+
+        scanning = false
+        bleScanner.stopScan(scanCallback)
+        Log.d(TAG, "Scan stopped")
     }
 
     private fun connect() {
