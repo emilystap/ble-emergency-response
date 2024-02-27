@@ -2,6 +2,7 @@ package com.example.smartvest.util.services
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -18,6 +19,7 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Intent
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
@@ -66,7 +68,7 @@ class BleService : Service() {
         const val SERVICE_ID = 1
         const val NOTIFICATION_CHANNEL_ID = "services.BleService"
         const val NOTIFICATION_CHANNEL_NAME = "BleService"
-        const val PKG_CLASS_NAME = "com.example.smartvest.service.BleService"
+        const val PKG_CLASS_NAME = "com.example.smartvest.services.BleService"
 
         val permissions = arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
@@ -108,6 +110,8 @@ class BleService : Service() {
             serviceLooper = looper
             serviceHandler = Handler(looper)
         }
+
+        setNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -219,17 +223,29 @@ class BleService : Service() {
             stopSelf()
         }
 
-        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText("Tracking active")
-            .setSmallIcon(R.drawable.ic_launcher_foreground).build()
-        startForeground(SERVICE_ID, notification)
-
         if (bleDevice == null) {
             scan()
         } else {
             connect()
         }
+    }
+
+    private fun setNotification() {
+        val pendingIntent = PendingIntent.getForegroundService(
+            this,
+            0,
+            Intent(this, SmsService::class.java),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText("Tracking active")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .addAction(R.drawable.ic_launcher_foreground, "Send SMS", pendingIntent)
+            .build()
+
+        startForeground(SERVICE_ID, notification, FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
     }
 
     private fun scan() {
@@ -242,7 +258,7 @@ class BleService : Service() {
                 if (bleDevice == null) {
                     Log.w(TAG, "BLE device not found")
                     broadcast(Status.DEVICE_NOT_FOUND)
-                    stopSelf()
+                    //stopSelf()
                 }
             }, SCAN_TIMEOUT_PERIOD)  // stop scanning after timeout period
 

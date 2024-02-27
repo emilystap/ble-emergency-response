@@ -2,9 +2,11 @@ package com.example.smartvest.util
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.location.Location
 import android.util.Log
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 
@@ -43,10 +45,10 @@ object LocationUtil {
         return "http://maps.google.com/maps?z=${zoom.value}&t=${mapType.value}&q=loc:$lat+$lon"
     }
 
-    fun getLocation(
+    fun getCurrentLocation(
+        context: Context,
         usePreciseLocation: Boolean = false,
-        fusedLocationClient: FusedLocationProviderClient,
-        onSuccess: (Location) -> Unit,
+        onSuccess: (Location?) -> Unit,
         onFailure: (Exception) -> Unit = { Log.e(TAG, "getLocation: $it") }
     ) {
         val priority = if (usePreciseLocation)
@@ -54,9 +56,29 @@ object LocationUtil {
         else
             Priority.PRIORITY_BALANCED_POWER_ACCURACY
 
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         fusedLocationClient.getCurrentLocation(
             priority,
             CancellationTokenSource().token,
-        ).addOnSuccessListener { onSuccess(it) }.addOnFailureListener { onFailure(it) }
+        ).addOnSuccessListener {loc: Location? ->
+            onSuccess(loc)
+        }.addOnFailureListener {
+            onFailure(it)
+        }
+    }
+
+    fun getLastLocation(
+        context: Context,
+        onSuccess: (Location?) -> Unit,
+        onFailure: (Exception) -> Unit = { Log.e(TAG, "getLocation: $it") }
+    ) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { loc: Location? ->
+                onSuccess(loc)
+            }
+            .addOnFailureListener {
+                onFailure(it)
+            }
     }
 }

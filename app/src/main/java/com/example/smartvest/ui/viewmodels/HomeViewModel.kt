@@ -30,11 +30,11 @@ class HomeViewModel(private val application: Application) : AndroidViewModel(app
     }
 
     fun refreshBleService() {
-        application.startService(Intent(application, BleService::class.java))
+        application.startForegroundService(Intent(application, BleService::class.java))
     }
 
     fun startSmsService() {
-        application.startService(Intent(application, SmsService::class.java))
+        application.startForegroundService(Intent(application, SmsService::class.java))
     }
 
     init {

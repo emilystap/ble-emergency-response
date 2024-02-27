@@ -3,11 +3,15 @@ package com.example.smartvest.util.services
 import android.Manifest
 import android.app.Service
 import android.content.Intent
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
 import android.os.IBinder
 import android.telephony.SmsManager
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.example.smartvest.R
 import com.example.smartvest.data.SettingsRepository
 import com.example.smartvest.util.LocationUtil
+import com.example.smartvest.util.PermissionUtil
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
@@ -19,11 +23,9 @@ import kotlinx.coroutines.runBlocking
 private const val TAG = "SmsService"
 
 class SmsService : Service() {
-    /* TODO: Move to IntentService / Background Service? (separate thread) */
     /* TODO: Add timer notification/pop-up on BLE trigger */
     private lateinit var smsManager: SmsManager
     private lateinit var settingsRepository: SettingsRepository
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var number: String
 
     private var smsEnabled: Boolean = false
@@ -33,6 +35,11 @@ class SmsService : Service() {
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
     companion object {
+        const val SERVICE_ID = 2
+        const val NOTIFICATION_CHANNEL_ID = "services.SmsService"
+        const val NOTIFICATION_CHANNEL_NAME = "SmsService"
+        const val PKG_CLASS_NAME = "com.example.smartvest.services.SmsService"
+
         val permissions = arrayOf(Manifest.permission.SEND_SMS)
     }
 
@@ -54,16 +61,13 @@ class SmsService : Service() {
             Log.w(TAG, "SMS is disabled")
             stopSelf()  // stop service if SMS is disabled
         }
-
-        if (locationEnabled)
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
         smsManager = this.getSystemService(SmsManager::class.java) as SmsManager
+
+        setNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "Starting service")
-        getSms()  // generates and sends SMS msg
+        start()
 
         return START_REDELIVER_INTENT  // restart with previous intent if interrupted
     }
@@ -75,14 +79,41 @@ class SmsService : Service() {
         job.cancel()  // cancel coroutines
     }
 
+    private fun start() {
+        Log.d(TAG, "Starting service")
+
+        if (!PermissionUtil.checkPermissionsBackground(this, permissions)) {
+            Log.w(TAG, "Missing required permissions")
+            stopSelf()
+        }
+
+        getSms()  // generates and sends SMS msg
+    }
+
+    private fun setNotification() {
+        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText("Sending SMS...")
+            .setSmallIcon(R.drawable.ic_launcher_foreground).build()
+
+        startForeground(SERVICE_ID, notification, FOREGROUND_SERVICE_TYPE_LOCATION)
+    }
+
     private fun getSms() {
         var msg = "This is an automated message."  /* TODO: update msg, add username? */
 
         if (locationEnabled) {
-            LocationUtil.getLocation(
-                fusedLocationClient = fusedLocationClient,
+            LocationUtil.getCurrentLocation(
+                context = this,
                 onSuccess = {
-                    msg += " Location: ${LocationUtil.getMapUrl(it)}"
+                    if (it != null)
+                        msg += " Location: ${LocationUtil.getMapUrl(it)}"
+                    else
+                        Log.w(TAG, "Location is null")
+                    sendSms(msg)
+                },
+                onFailure = {
+                    Log.e(TAG, "Failed to get location", it)
                     sendSms(msg)
                 }
             )
