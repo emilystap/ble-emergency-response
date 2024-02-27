@@ -10,7 +10,7 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val channels = arrayOf(
+        val notificationChannels = listOf(
             NotificationChannel(
                 BleService.NOTIFICATION_CHANNEL_ID,
                 BleService.NOTIFICATION_CHANNEL_NAME,
@@ -25,9 +25,6 @@ class MainApplication : Application() {
 
         val notificationManager = getSystemService(NotificationManager::class.java)
             as NotificationManager
-
-        for (channel in channels) {
-            notificationManager.createNotificationChannel(channel)
-        }
+        notificationManager.createNotificationChannels(notificationChannels)
     }
 }

@@ -2,6 +2,7 @@ package com.example.smartvest.util.services
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
@@ -29,6 +30,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.smartvest.R
 import com.example.smartvest.util.PermissionUtil
+import com.example.smartvest.util.receivers.BleStatusReceiver
 import java.util.UUID
 
 private const val TAG = "BleService"
@@ -62,13 +64,14 @@ class BleService : Service() {
     private var bleGatt: BluetoothGatt? = null
     private var bleServices: List<BluetoothGattService>? = null
     private var bleUartService: BluetoothGattService? = null
+    private var pendingSmsIntent: PendingIntent? = null
     private var connectionState: Int = BluetoothProfile.STATE_DISCONNECTED
 
     companion object {
         const val SERVICE_ID = 1
+        const val NOTIFICATION_TITLE = "BLE Service"
         const val NOTIFICATION_CHANNEL_ID = "services.BleService"
         const val NOTIFICATION_CHANNEL_NAME = "BleService"
-        const val PKG_CLASS_NAME = "com.example.smartvest.services.BleService"
 
         val permissions = arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
@@ -235,7 +238,7 @@ class BleService : Service() {
     }
 
     private fun setNotification() {
-        val pendingSmsIntent = PendingIntent.getForegroundService(
+        pendingSmsIntent = PendingIntent.getForegroundService(
             this,
             0,
             Intent(this, SmsService::class.java),
@@ -243,7 +246,7 @@ class BleService : Service() {
         )  /* TODO: Add stop service button */
 
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.app_name))
+            .setContentTitle(NOTIFICATION_TITLE)
             .setContentText("Tracking active")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .addAction(R.drawable.ic_launcher_foreground, "Send SMS", pendingSmsIntent)
@@ -252,6 +255,21 @@ class BleService : Service() {
             .build()
 
         startForeground(SERVICE_ID, notification, FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
+    }
+
+    private fun updateNotification(status: String) {
+        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(NOTIFICATION_TITLE)
+            .setContentText(status)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .addAction(R.drawable.ic_launcher_foreground, "Send SMS", pendingSmsIntent)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
+            .build()
+
+        val notificationManager = getSystemService(NotificationManager::class.java)
+                as NotificationManager
+        notificationManager.notify(SERVICE_ID, notification)
     }
 
     private fun scan() {
@@ -347,8 +365,10 @@ class BleService : Service() {
         characteristic: BluetoothGattCharacteristic? = null,
         value: ByteArray? = null
     ) {
-        val intent = Intent(PKG_CLASS_NAME)
-        intent.putExtra("status", status)
+        Log.d(TAG, "Broadcasting: $status")
+        val intent = Intent(this, BleStatusReceiver::class.java)
+            .setAction(BleStatusReceiver.ACTION_UPDATE_STATUS)
+            .putExtra("status", status)
 
         characteristic?.let { intent.putExtra("uuid", it.uuid.toString()) }
         value?.let { intent.putExtra("value", it) }

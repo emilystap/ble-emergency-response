@@ -1,5 +1,6 @@
 package com.example.smartvest.data
 
+import android.app.Application
 import android.content.Context
 import android.content.IntentFilter
 import com.example.smartvest.util.receivers.BleStatusReceiver
@@ -8,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 class BleStatusRepository private constructor() {
     private val receiver = BleStatusReceiver()
-    private val intentFilter = IntentFilter(BleService.PKG_CLASS_NAME)
 
     companion object {
         @Volatile
@@ -38,16 +38,18 @@ class BleStatusRepository private constructor() {
         return receiver.gattConnected()
     }
 
-    fun registerReceiver(context: Context) {
-        context.registerReceiver(
+    fun registerReceiver(application: Application) {
+        val intentFilter = IntentFilter(BleStatusReceiver.ACTION_UPDATE_STATUS)
+
+        application.registerReceiver(
             receiver,
             intentFilter,
             Context.RECEIVER_NOT_EXPORTED
         )
     }
 
-    fun unregisterReceiver(context: Context) {
-        context.unregisterReceiver(receiver)
+    fun unregisterReceiver(application: Application) {
+        application.unregisterReceiver(receiver)
     }
 }
 

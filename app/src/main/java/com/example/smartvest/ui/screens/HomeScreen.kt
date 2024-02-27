@@ -42,7 +42,6 @@ import com.example.smartvest.util.services.BleService
 import com.example.smartvest.util.services.SmsService
 
 private const val TAG = "HomeScreen"
-/* TODO: Switch to Hilt for dependency injection */
 
 @Composable
 fun HomeScreen(

@@ -1,6 +1,7 @@
 package com.example.smartvest.util.services
 
 import android.Manifest
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
@@ -12,8 +13,6 @@ import com.example.smartvest.R
 import com.example.smartvest.data.SettingsRepository
 import com.example.smartvest.util.LocationUtil
 import com.example.smartvest.util.PermissionUtil
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,9 +35,9 @@ class SmsService : Service() {
 
     companion object {
         const val SERVICE_ID = 2
+        const val NOTIFICATION_TITLE = "SMS Service"
         const val NOTIFICATION_CHANNEL_ID = "services.SmsService"
         const val NOTIFICATION_CHANNEL_NAME = "SmsService"
-        const val PKG_CLASS_NAME = "com.example.smartvest.services.SmsService"
 
         val permissions = arrayOf(Manifest.permission.SEND_SMS)
     }
@@ -92,11 +91,28 @@ class SmsService : Service() {
 
     private fun setNotification() {
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.app_name))
+            .setContentTitle(NOTIFICATION_TITLE)
             .setContentText("Sending SMS...")
-            .setSmallIcon(R.drawable.ic_launcher_foreground).build()
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
+            .build()
 
         startForeground(SERVICE_ID, notification, FOREGROUND_SERVICE_TYPE_LOCATION)
+    }
+
+    private fun updateNotification(status: String) {
+        val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setContentTitle(NOTIFICATION_TITLE)
+            .setContentText(status)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
+            .build()
+
+        val notificationManager = getSystemService(NotificationManager::class.java)
+                as NotificationManager
+        notificationManager.notify(SERVICE_ID, notification)
     }
 
     private fun getSms() {

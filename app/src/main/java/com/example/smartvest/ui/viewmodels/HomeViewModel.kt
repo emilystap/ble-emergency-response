@@ -20,7 +20,7 @@ class HomeViewModel(private val application: Application) : AndroidViewModel(app
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),  /* TODO: Figure this param out */
+        started = SharingStarted.WhileSubscribed(5_000),
         initialValue = HomeUiState(connected = false)
     )
 
