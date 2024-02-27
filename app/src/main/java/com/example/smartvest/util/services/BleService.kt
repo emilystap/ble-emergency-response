@@ -258,7 +258,7 @@ class BleService : Service() {
                 if (bleDevice == null) {
                     Log.w(TAG, "BLE device not found")
                     broadcast(Status.DEVICE_NOT_FOUND)
-                    //stopSelf()
+                    stopSelf()
                 }
             }, SCAN_TIMEOUT_PERIOD)  // stop scanning after timeout period
 
