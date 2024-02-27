@@ -17,7 +17,8 @@ class BleStatusReceiver : BroadcastReceiver() {
     private val gattConnected: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     companion object {
-        val ACTION_UPDATE_STATUS = this::class.java.name + ".ACTION_UPDATE_STATUS"
+        const val ACTION_UPDATE_STATUS
+            = "com.example.smartvest.util.receivers.BleStatusReceiver.ACTION_UPDATE_STATUS"
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
