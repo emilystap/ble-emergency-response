@@ -235,18 +235,18 @@ class BleService : Service() {
     }
 
     private fun setNotification() {
-        val pendingIntent = PendingIntent.getForegroundService(
+        val pendingSmsIntent = PendingIntent.getForegroundService(
             this,
             0,
             Intent(this, SmsService::class.java),
             PendingIntent.FLAG_IMMUTABLE
-        )
+        )  /* TODO: Add stop service button */
 
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getString(R.string.app_name))
             .setContentText("Tracking active")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .addAction(R.drawable.ic_launcher_foreground, "Send SMS", pendingIntent)
+            .addAction(R.drawable.ic_launcher_foreground, "Send SMS", pendingSmsIntent)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
             .build()
