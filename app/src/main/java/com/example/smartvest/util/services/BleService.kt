@@ -247,6 +247,8 @@ class BleService : Service() {
             .setContentText("Tracking active")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .addAction(R.drawable.ic_launcher_foreground, "Send SMS", pendingIntent)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
             .build()
 
         startForeground(SERVICE_ID, notification, FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
