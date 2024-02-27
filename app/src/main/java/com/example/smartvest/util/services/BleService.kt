@@ -197,7 +197,7 @@ class BleService : Service() {
             }
         }
 
-        override fun onCharacteristicChanged(
+        override fun onCharacteristicChanged(  /* TODO: Filter out multiple triggers */
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray
