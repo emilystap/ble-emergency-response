@@ -18,6 +18,10 @@ Mobile application component of project submission for Senior Design 2024 at the
 - [ ] Option within application and notification for user to stop or start BLE monitoring
 - [ ] Option to add multiple emergency contacts
 
+## Installation
+
+Download APK from latest release [here](https://github.com/emilystap/ble-emergency-response/releases/latest)
+
 ## Dependencies
 
 * Android SDK 33 or greater
