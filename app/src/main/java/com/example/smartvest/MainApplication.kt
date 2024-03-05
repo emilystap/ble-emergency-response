@@ -19,7 +19,7 @@ class MainApplication : Application() {
             NotificationChannel(
                 SmsService.NOTIFICATION_CHANNEL_ID,
                 SmsService.NOTIFICATION_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH  /* TODO: Figure out mult. notif. channels */
+                NotificationManager.IMPORTANCE_HIGH
             )
         )
 

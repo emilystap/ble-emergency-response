@@ -41,7 +41,7 @@ object PermissionUtil {
             return true
         }
 
-        Log.d(TAG, "One or more permissions denied")  /* TODO: handle permission denied */
+        Log.d(TAG, "One or more permissions denied")
         return false
     }
 }

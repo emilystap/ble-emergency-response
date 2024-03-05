@@ -53,7 +53,7 @@ object LocationUtil {
         onFailure: (Exception) -> Unit = { Log.e(TAG, "getLocation: $it") }
     ) {
         val priority = if (usePreciseLocation)
-            Priority.PRIORITY_HIGH_ACCURACY  /* TODO: Make this a settings/based on battery % */
+            Priority.PRIORITY_HIGH_ACCURACY
         else
             Priority.PRIORITY_BALANCED_POWER_ACCURACY
 

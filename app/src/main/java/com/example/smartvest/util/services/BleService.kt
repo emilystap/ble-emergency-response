@@ -151,7 +151,6 @@ class BleService : Service() {
                     Log.d(TAG, "Connected to Gatt server")
                     connectionState = BluetoothProfile.STATE_CONNECTED
                     broadcast(Status.GATT_CONNECTED)
-                    /* TODO: Handle disconnects/reconnects, figure out how to stabilize on init */
 
                     bleGatt?.discoverServices()
                 }
@@ -197,7 +196,7 @@ class BleService : Service() {
             }
         }
 
-        override fun onCharacteristicChanged(  /* TODO: Filter out multiple triggers */
+        override fun onCharacteristicChanged(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray
@@ -243,7 +242,7 @@ class BleService : Service() {
             0,
             Intent(this, SmsService::class.java),
             PendingIntent.FLAG_IMMUTABLE
-        )  /* TODO: Add stop service button */
+        )
 
         val notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle(NOTIFICATION_TITLE)

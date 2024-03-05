@@ -66,7 +66,6 @@ fun HomeScreen(
     }
 }
 
-/* TODO: add buttons to start tracking, refresh connection */
 @Composable
 private fun ConnectionStatus(
     modifier: Modifier = Modifier,
@@ -150,7 +149,7 @@ private fun SMSAlertDialog(
 ) {
     AlertDialog(
         icon = { Icon(Icons.Default.Warning, contentDescription = "Warning") },
-        title = { Text(text = stringResource(id = R.string.sms_alert_dialog_title)) },  /* TODO: add check for location disabled */
+        title = { Text(text = stringResource(id = R.string.sms_alert_dialog_title)) },
         text = { Text(text = stringResource(id = R.string.sms_alert_dialog_text)) },
         onDismissRequest = { onDismiss() },
         confirmButton = {

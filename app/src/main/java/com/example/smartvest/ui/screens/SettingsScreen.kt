@@ -85,7 +85,7 @@ private fun LocationEnable(
             onCheckedChange = {
                 viewModel.setLocationEnabled(it)
 
-                if (enabled) {  /* TODO: move this to view model? */
+                if (enabled) {
                     PermissionUtil.checkPermissions(
                         permissionRequestLauncher,
                         LocationUtil.permissions

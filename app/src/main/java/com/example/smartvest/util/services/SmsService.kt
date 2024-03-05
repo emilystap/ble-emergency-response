@@ -22,7 +22,6 @@ import kotlinx.coroutines.runBlocking
 private const val TAG = "SmsService"
 
 class SmsService : Service() {
-    /* TODO: Add timer notification/pop-up on BLE trigger */
     private lateinit var smsManager: SmsManager
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var number: String
@@ -116,7 +115,7 @@ class SmsService : Service() {
     }
 
     private fun getSms() {
-        var msg = "This is an automated message."  /* TODO: update msg, add username? */
+        var msg = "This is an automated message."
 
         if (locationEnabled) {
             LocationUtil.getCurrentLocation(

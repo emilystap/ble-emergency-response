@@ -14,12 +14,10 @@ import com.example.smartvest.util.services.BleService
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        /* TODO: Clean up ALL Log statements, add documentation */
 
         val blePermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
-            /* TODO: Handle permission denied */
             if (PermissionUtil.checkPermissionRequestResults(it))
                 startForegroundService(Intent(this, BleService::class.java))
         }
