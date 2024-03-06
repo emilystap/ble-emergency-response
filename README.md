@@ -12,12 +12,6 @@ Mobile application component of project submission for Senior Design 2024 at the
 * Option within application and notification to manually trigger emergency response
 * Ability to monitor and refresh BLE connection through home page
 
-### Roadmap
-
-- [ ] 30 second timer, to allow user to cancel in-progress emergency response
-- [ ] Option within application and notification for user to stop or start BLE monitoring
-- [ ] Option to add multiple emergency contacts
-
 ## Installation
 
 Download APK from latest release [here](https://github.com/emilystap/ble-emergency-response/releases/latest)
