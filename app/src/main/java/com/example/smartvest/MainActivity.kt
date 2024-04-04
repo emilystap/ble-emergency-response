@@ -1,7 +1,6 @@
 package com.example.smartvest
 
 import android.content.Intent
-import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,7 +23,7 @@ class MainActivity : ComponentActivity() {
 
         PermissionUtil.checkPermissions(
             blePermissionLauncher,
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+            BleService.permissions
         )
 
         setContent {
