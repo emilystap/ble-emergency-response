@@ -104,6 +104,11 @@ class SmsService : Service() {
             stopSelf()
         }
 
+        if (sendSms) {
+            Log.d(TAG, "Received SMS trigger while already sending SMS")
+            return
+        }
+
         sendSms = true
         serviceHandler?.postDelayed({
             stopNotificationTimer()
@@ -152,7 +157,7 @@ class SmsService : Service() {
 
     private fun getSms() {
         if (!sendSms) {
-            Log.d(TAG, "SMS service stopped")
+            Log.d(TAG, "Send SMS canceled")
             return
         }
         var msg = "This is an automated message."
