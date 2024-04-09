@@ -42,7 +42,6 @@ class BleStatusRepository private constructor() {
     }
 
     fun registerReceiver(application: Application) {
-        Log.d(TAG, "Receiver registered")
         val intentFilter = IntentFilter().apply{
             addAction(BleService.ACTION_UPDATE_STATUS)
         }
@@ -52,11 +51,11 @@ class BleStatusRepository private constructor() {
             intentFilter,
             Context.RECEIVER_NOT_EXPORTED
         )
+        Log.d(TAG, "Receiver registered")
     }
 
     fun unregisterReceiver(application: Application) {
-        Log.d(TAG, "Receiver unregistered")
         application.unregisterReceiver(receiver)
+        Log.d(TAG, "Receiver unregistered")
     }
 }
-
