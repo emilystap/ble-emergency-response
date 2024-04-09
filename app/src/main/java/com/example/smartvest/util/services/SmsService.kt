@@ -42,6 +42,7 @@ class SmsService : Service() {
     companion object {
         const val SERVICE_ID = 2
         const val ACTION_STOP_SERVICE = "com.example.smartvest.util.services.SmsService.STOP_SERVICE"
+        const val ACTION_FORCE_SEND = "com.example.smartvest.util.services.SmsService.FORCE_SEND"
         const val NOTIFICATION_TITLE = "SMS Service"
         const val NOTIFICATION_CHANNEL_ID = "services.SmsService"
         const val NOTIFICATION_CHANNEL_NAME = "SmsService"
@@ -58,6 +59,7 @@ class SmsService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        setInitialNotification()
 
         settingsRepository = SettingsRepository.getInstance(this, scope)
         runBlocking(Dispatchers.IO) {  // blocking, since can't continue without this
@@ -70,21 +72,33 @@ class SmsService : Service() {
             Log.w(TAG, "SMS is disabled")
             stopSelf()  // stop service if SMS is disabled
         }
+
+        if (!PermissionUtil.checkPermissionsBackground(this, permissions)) {
+            Log.w(TAG, "Missing required permissions")
+            stopSelf()
+        }
+
         smsManager = this.getSystemService(SmsManager::class.java) as SmsManager
         serviceHandler = Handler(Looper.getMainLooper())
-
-        setInitialNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP_SERVICE) {
-            Log.w(TAG,"Cancelling emergency response")
-            sendSms = false  // extra check, since removeCallbacks can't stop in-progress tasks
-            serviceHandler?.removeCallbacksAndMessages(null)
-            stopSelf()
-        }
-        else {
-            start()
+        when (intent?.action) {
+            ACTION_STOP_SERVICE -> {
+                Log.w(TAG,"Cancelling emergency response")
+                sendSms = false  // extra check, since removeCallbacks can't stop in-progress tasks
+                serviceHandler?.removeCallbacksAndMessages(null)
+                stopSelf()
+            }
+            ACTION_FORCE_SEND -> {
+                Log.d(TAG,"Forced SMS send")
+                sendSms = false
+                serviceHandler?.removeCallbacksAndMessages(null)  // remove delayed send
+                start(forceSend = true)  // force send
+            }
+            else -> {
+                start()
+            }
         }
         return START_REDELIVER_INTENT  // restart with previous intent if interrupted
     }
@@ -96,13 +110,8 @@ class SmsService : Service() {
         job.cancel()  // cancel coroutines
     }
 
-    private fun start() {
+    private fun start(forceSend: Boolean = false) {
         Log.d(TAG, "Starting service")
-
-        if (!PermissionUtil.checkPermissionsBackground(this, permissions)) {
-            Log.w(TAG, "Missing required permissions")
-            stopSelf()
-        }
 
         if (sendSms) {
             Log.d(TAG, "Received SMS trigger while already sending SMS")
@@ -110,19 +119,32 @@ class SmsService : Service() {
         }
 
         sendSms = true
-        serviceHandler?.postDelayed({
-            stopNotificationTimer()
+        if (forceSend)
             getSms()
-        }, CANCELLATION_TIMEOUT)
+        else
+            serviceHandler?.postDelayed({
+                getSms()
+            }, CANCELLATION_TIMEOUT)
     }
 
     private fun setInitialNotification() {
         val stopSelfIntent = Intent(this, SmsService::class.java)
-        stopSelfIntent.action = ACTION_STOP_SERVICE
+            .setAction(ACTION_STOP_SERVICE)
+
+        val forceSendIntent = Intent(this, SmsService::class.java)
+            .setAction(ACTION_FORCE_SEND)
+
         val pendingStopSelfIntent = PendingIntent.getForegroundService(
             this,
             0,
             stopSelfIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val pendingForceSendIntent = PendingIntent.getForegroundService(
+            this,
+            0,
+            forceSendIntent,
             PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -134,6 +156,7 @@ class SmsService : Service() {
             .setChronometerCountDown(true)
             .setWhen(System.currentTimeMillis() + CANCELLATION_TIMEOUT)
             .addAction(R.drawable.ic_launcher_foreground, "Cancel", pendingStopSelfIntent)
+            .addAction(R.drawable.ic_launcher_foreground, "Force Send", pendingForceSendIntent)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
             .build()
@@ -156,10 +179,12 @@ class SmsService : Service() {
     }
 
     private fun getSms() {
+        stopNotificationTimer()
         if (!sendSms) {
             Log.d(TAG, "Send SMS canceled")
             return
         }
+
         var msg = "This is an automated message."
 
         if (locationEnabled) {

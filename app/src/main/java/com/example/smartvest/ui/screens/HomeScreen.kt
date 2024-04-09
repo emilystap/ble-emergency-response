@@ -1,6 +1,5 @@
 package com.example.smartvest.ui.screens
 
-import android.Manifest
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -83,9 +82,6 @@ private fun ConnectionStatus(
     val connected = uiState.connected
 
     Row(modifier = Modifier.padding(24.dp)) {
-        Text(
-            text = "Status: "
-        )
         Text(
             text = if (connected) "Connected" else "Disconnected",
             color = (

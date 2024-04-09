@@ -73,6 +73,9 @@ class BleService : Service() {
         const val NOTIFICATION_CHANNEL_ID = "services.BleService"
         const val NOTIFICATION_CHANNEL_NAME = "BleService"
 
+        const val ACTION_UPDATE_STATUS
+                = "com.example.smartvest.util.services.BleService.ACTION_UPDATE_STATUS"
+
         val permissions = arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
             Manifest.permission.BLUETOOTH_ADMIN,
@@ -101,6 +104,12 @@ class BleService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        setNotification()
+
+        if (!PermissionUtil.checkPermissionsBackground(this, permissions)) {
+            Log.w(TAG, "Missing required permissions")
+            stopSelf()
+        }
 
         bluetoothManager = this.getSystemService(BLUETOOTH_SERVICE)
                 as BluetoothManager
@@ -113,8 +122,6 @@ class BleService : Service() {
             serviceLooper = looper
             serviceHandler = Handler(looper)
         }
-
-        setNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -223,11 +230,6 @@ class BleService : Service() {
 
     private fun start() {
         Log.d(TAG, "Starting service")
-
-        if (!PermissionUtil.checkPermissionsBackground(this, permissions)) {
-            Log.w(TAG, "Missing required permissions")
-            stopSelf()
-        }
 
         if (bleDevice == null) {
             scan()
@@ -366,7 +368,7 @@ class BleService : Service() {
     ) {
         Log.d(TAG, "Broadcasting: $status")
         val intent = Intent(this, BleStatusReceiver::class.java)
-            .setAction(BleStatusReceiver.ACTION_UPDATE_STATUS)
+            .setAction(ACTION_UPDATE_STATUS)
             .putExtra("status", status)
 
         characteristic?.let { intent.putExtra("uuid", it.uuid.toString()) }

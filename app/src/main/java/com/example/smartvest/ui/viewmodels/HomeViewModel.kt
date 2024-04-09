@@ -8,6 +8,7 @@ import com.example.smartvest.data.BleStatusRepository
 import com.example.smartvest.ui.states.HomeUiState
 import com.example.smartvest.util.services.BleService
 import com.example.smartvest.util.services.SmsService
+import com.example.smartvest.util.services.SmsService.Companion.ACTION_FORCE_SEND
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -24,20 +25,13 @@ class HomeViewModel(private val application: Application) : AndroidViewModel(app
         initialValue = HomeUiState(connected = false)
     )
 
-    override fun onCleared() {
-        super.onCleared()
-        bleStatusRepository.unregisterReceiver(application)
-    }
-
     fun refreshBleService() {
         application.startForegroundService(Intent(application, BleService::class.java))
     }
 
     fun startSmsService() {
-        application.startForegroundService(Intent(application, SmsService::class.java))
-    }
-
-    init {
-        bleStatusRepository.registerReceiver(application)
+        val intent = Intent(application, SmsService::class.java)
+                .setAction(ACTION_FORCE_SEND)
+        application.startForegroundService(intent)
     }
 }

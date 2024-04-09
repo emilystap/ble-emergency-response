@@ -3,9 +3,12 @@ package com.example.smartvest.data
 import android.app.Application
 import android.content.Context
 import android.content.IntentFilter
+import android.util.Log
 import com.example.smartvest.util.receivers.BleStatusReceiver
 import com.example.smartvest.util.services.BleService
 import kotlinx.coroutines.flow.StateFlow
+
+private const val TAG = "BleStatusRepository"
 
 class BleStatusRepository private constructor() {
     private val receiver = BleStatusReceiver()
@@ -39,7 +42,10 @@ class BleStatusRepository private constructor() {
     }
 
     fun registerReceiver(application: Application) {
-        val intentFilter = IntentFilter(BleStatusReceiver.ACTION_UPDATE_STATUS)
+        Log.d(TAG, "Receiver registered")
+        val intentFilter = IntentFilter().apply{
+            addAction(BleService.ACTION_UPDATE_STATUS)
+        }
 
         application.registerReceiver(
             receiver,
@@ -49,6 +55,7 @@ class BleStatusRepository private constructor() {
     }
 
     fun unregisterReceiver(application: Application) {
+        Log.d(TAG, "Receiver unregistered")
         application.unregisterReceiver(receiver)
     }
 }

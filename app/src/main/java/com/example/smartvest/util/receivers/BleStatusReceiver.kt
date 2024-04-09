@@ -16,14 +16,9 @@ class BleStatusReceiver : BroadcastReceiver() {
 
     private val gattConnected: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    companion object {
-        const val ACTION_UPDATE_STATUS
-            = "com.example.smartvest.util.receivers.BleStatusReceiver.ACTION_UPDATE_STATUS"
-    }
-
     override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d(TAG, "onReceive: $intent")
         intent?.getStringExtra("status")?.let {
-            Log.d(TAG, "onReceive: $it")
             status.value = BleService.Status.valueOf(it)
 
             if (status.value == BleService.Status.GATT_CONNECTED)
