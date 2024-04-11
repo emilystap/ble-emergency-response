@@ -16,9 +16,9 @@ class BleStatusReceiver : BroadcastReceiver() {
 
     private val gattConnected: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    override fun onReceive(context: Context?, intent: Intent?) {
+    override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "onReceive: $intent")
-        intent?.getStringExtra("status")?.let {
+        intent.getStringExtra("status")?.let {
             status.value = BleService.Status.valueOf(it)
 
             if (status.value == BleService.Status.GATT_CONNECTED)

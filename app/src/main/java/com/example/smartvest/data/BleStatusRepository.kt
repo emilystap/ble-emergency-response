@@ -42,9 +42,7 @@ class BleStatusRepository private constructor() {
     }
 
     fun registerReceiver(application: Application) {
-        val intentFilter = IntentFilter().apply {
-            addAction(BleService.ACTION_UPDATE_STATUS)
-        }
+        val intentFilter = IntentFilter(BleService.ACTION_UPDATE_STATUS)
 
         application.registerReceiver(
             receiver,
