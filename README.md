@@ -2,6 +2,8 @@
 
 Android application designed to send an SMS message containing the user's location to an emergency contact upon BLE trigger
 
+\**This repository has been archived due to loss of access to necessary hardware*
+
 ## Description
 
 Mobile application component of project submission for Senior Design 2024 at the University of Akron - the purpose of the design project is to create a wearable smart vest for pedestrians, which will detect on-coming vehicles and possible collisions. Application pairs with an RN4870 Bluetooth Low Energy (BLE) module connected to a PIC24F microcontroller. Microcontroller transmits an SOS signal to the mobile application through BLE when a collision is suspected. The application initiates an emergency response upon receiving an SOS signal, sending an SMS message containing the user's location to the user's emergency contact. The application attempts to establish a connection to the BLE module on startup, then continues to monitor for SOS signals by subscribing to BLE characteristic change notifications within a foreground service.
